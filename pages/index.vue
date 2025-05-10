@@ -8,28 +8,38 @@ export default {
   data() {
     return {
       carImages: [
-        {
+      {
           id: 1,
+          src: '/images/gtr.webp',
+          alt: 'Nissan GTR'
+        },
+        {
+          id: 2,
+          src: '/images/trailer.webp',
+          alt: 'Trailer'
+        },
+        {
+          id: 3,
           src: '/images/rivianEV.webp',
           alt: 'Rivian Truck'
         },
         {
-          id: 2,
+          id: 4,
           src: '/images/jeep.webp',
           alt: 'Jeep'
         },
         {
-          id: 3,
+          id: 5,
           src: '/images/tesla.webp',
           alt: 'Tesla'
         },
         {
-          id: 4,
+          id: 6,
           src: '/images/classicCar.webp',
           alt: 'Classic Car'
         },
         {
-          id: 5,
+          id: 7,
           src: '/images/hyundai.webp',
           alt: 'Hyundai'
         },
