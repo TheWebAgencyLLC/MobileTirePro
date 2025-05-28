@@ -2,6 +2,7 @@
 import { analyticsConfig } from './config/analytics'
 import { schemaConfig } from './config/schema'
 import { metaConfig } from './config/meta'
+import { hotjarConfig } from './config/hotjar'
 import { socialMetaConfig } from './config/social-meta'
 import { externalScriptsConfig } from './config/external-scripts'
 
@@ -19,7 +20,8 @@ export default defineNuxtConfig({
           script: [
             ...analyticsConfig.googleAnalytics,
             ...schemaConfig.script,
-            ...externalScriptsConfig.script
+            ...externalScriptsConfig.script,
+            ...hotjarConfig.script,
           ],
         }
     },
