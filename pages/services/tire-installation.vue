@@ -14,10 +14,10 @@
                 <p class="text-xl text-white max-w-3xl mx-auto mb-8">
                     Expert mobile tire installation services that come to you
                 </p>
-                <NuxtLink to="/bookings"
+                <div
                     class="bg-vivid-red hover:bg-vivid-red/90 text-white text-lg font-medium rounded-lg transition-all transform hover:scale-105 block w-[220px] py-4 !important">
-                    <span class="inline-block px-6">Schedule Now &#8594;</span>
-                </NuxtLink>
+                    <a href="tel:+18153551437">Call to Order & Schedule</a>
+                </div>
             </div>
         </div>
 
