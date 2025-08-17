@@ -10,36 +10,41 @@ export default {
       carImages: [
       {
           id: 1,
+          src: '/images/genesis.jpeg',
+          alt: 'Hyundai Genesis SUV'
+        },
+        {
+          id: 2,
           src: '/images/gtr.webp',
           alt: 'Nissan GTR'
         },
         {
-          id: 2,
+          id: 3,
           src: '/images/trailer.webp',
           alt: 'Trailer'
         },
         {
-          id: 3,
+          id: 4,
           src: '/images/rivianEV.webp',
           alt: 'Rivian Truck'
         },
         {
-          id: 4,
+          id: 5,
           src: '/images/jeep.webp',
           alt: 'Jeep'
         },
         {
-          id: 5,
+          id: 6,
           src: '/images/tesla.webp',
           alt: 'Tesla'
         },
         {
-          id: 6,
+          id: 7,
           src: '/images/classicCar.webp',
           alt: 'Classic Car'
         },
         {
-          id: 7,
+          id: 8,
           src: '/images/hyundai.webp',
           alt: 'Hyundai'
         },
