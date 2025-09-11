@@ -11,12 +11,23 @@ const {price} = defineProps(['price'])
 
 const emit = defineEmits(['payment'])
 
+const resetProcessing = () => {
+  isProcessing.value = false;
+  paymentStatus.value = "";
+}
+
+defineExpose({
+  resetProcessing
+})
+
 const config = useRuntimeConfig();
 const appId = config.public.squareAppId//'sandbox-sq0idb-kSqCFhDPPZCfcIm56q8bWQ';
 const locationId = config.public.locationId //'LHM72HAD1BSB2';
 let card;
 let paymentStatus = ref("");
 let loading = ref(false);
+
+const isProcessing = ref(false)
 
 console.log(price)
 
@@ -83,6 +94,10 @@ const tokenize = async (paymentMethod) => {
 }
 
 const handlePaymentMethodSubmission = async () => {
+  console.warn('handlePaymentMethodSubmission')
+  if (isProcessing.value) return;
+  console.warn('STARTING')
+  isProcessing.value = true;
   paymentStatus.value = "";
   const token = await tokenize(card);
   const {data, error} = await useFetch("/api/pay", {
@@ -100,18 +115,22 @@ const handlePaymentMethodSubmission = async () => {
     },
   });
   if (!error.value) {
-    paymentStatus.value = "Payment completed";
+    paymentStatus.value = "Payment completed, creating appointment...";
     emit('payment')
+    // Keep isProcessing true - parent component will handle completion
   } else {
     paymentStatus.value = "Payment failed";
+    isProcessing.value = false;
   }
 };
 
-const handleGooglePaySubmission = async (googlePlay) => {
+const handleGooglePaySubmission = async (googlePay) => {
+  if (isProcessing.value) return;
+  isProcessing.value = true;
   try {
     paymentStatus.value = "";
-    const token = await tokenize(googlePlay);
-    const {data, error} = await useFetch("/api/pay", {
+    const token = await tokenize(googlePay);
+    const {error} = await useFetch("/api/pay", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -123,18 +142,20 @@ const handleGooglePaySubmission = async (googlePlay) => {
           amount: (parseInt(price) * 100).toString(),
           currency: "USD"
         }
-
       },
     });
     if (!error.value) {
-      paymentStatus.value = "Payment completed, Booking appointment please wait...";
+      paymentStatus.value = "Payment completed, creating appointment...";
       emit('payment')
-
+      // Keep isProcessing true - parent component will handle completion
     } else {
       paymentStatus.value = "Payment failed";
+      isProcessing.value = false;
     }
   } catch (e) {
     console.error(e)
+    paymentStatus.value = "Payment failed";
+    isProcessing.value = false;
   }
 };
 </script>
@@ -145,7 +166,7 @@ const handleGooglePaySubmission = async (googlePlay) => {
       <form class="space-y-2.5" @submit.prevent="handlePaymentMethodSubmission">
         <div v-if="loading">Loading...</div>
         <div id="card-container"/>
-        <button>Pay ${{ price }}</button>
+        <button :disabled="isProcessing">Pay ${{ price }}</button>
         <div class="w-full" id="google-pay-button"></div>
       </form>
       <div v-if="paymentStatus" id="payment-status-container">
