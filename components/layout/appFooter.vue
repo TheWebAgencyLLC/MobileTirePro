@@ -6,8 +6,9 @@
         <!-- Brand Section -->
         <div class="space-y-4">
           <div class="flex items-center space-x-3">
-            <img src="/images/icons/racing.webp" alt="Mobile Tire Pro Small Icon Logo" class="w-6 h-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Mobile Tire Pro</h3>
+            <img src="/public/images/logos/mtpLogo.png" 
+                class="w-40 h-auto max-h-10 sm:w-44 sm:max-h-11 md:w-48 md:max-h-12 object-contain" 
+                alt="Mobile Tire Pro Logo">
           </div>
           <p class="text-gray-600 dark:text-gray-300">
             Convenience meets expertise in tire care, bringing professional service directly to you.

@@ -11,7 +11,7 @@
       <div class="w-full md:w-[400px] p-6 bg-white">
         <!-- Logo and progress indicator -->
         <div class="flex flex-col items-center mb-4">
-          <img src="/public/images/icons/racing.webp" alt="Racing logo" class="w-8 h-8 mb-3" />
+          <img src="/public/images/raceWheel.png" alt="Racing logo" class="w-8 h-8 mb-3" />
           <div class="flex gap-2">
             <div class="w-10 h-1 rounded transition-all duration-300"
               :class="[currentStep >= 1 ? 'bg-red-500' : 'bg-gray-200']"></div>

@@ -13,8 +13,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <NuxtLink to="/" class="flex items-center">
-          <img src="/images/logos/MTP_PNG.png" alt="Mobile Tire Pro Logo"
-            class="w-[15rem] h-1/2 min-w-[48px] mr-2 object-cover">
+          <img src="/images/logos/mtpLogo.png" alt="Mobile Tire Pro Logo"
+            class="w-[15rem] h-auto max-h-14 min-w-[48px] mr-2 object-contain">
         </NuxtLink>
         <div class="hidden lg:flex items-center space-x-4">
           <NuxtLink @click="trackNavigation(link.label)" v-for="link in filteredDesktopLinks" :key="link.to"

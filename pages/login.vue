@@ -78,8 +78,10 @@ const sendCredentialsToBackend = async (credentials: any) => {
 <template>
   <div class="flex justify-center items-center p-8 bg-gray-100">
     <div class="flex w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
-      <div class="w-1/2 bg-cover bg-center hidden md:block"
-        style="background-image: url('/images/undraw_automobile_repair_ywci.webp');">
+      <div class="w-1/2 bg-cover bg-center hidden md:flex md:items-center md:justify-center p-4">
+        <img class="max-w-full max-h-full object-contain" 
+            src="/public/images/isometric-car-repair-horizontal-banner-with-serviceman-making-tire-service-vector-illustration.webp" 
+            alt="Tire service illustration">
       </div>
 
       <div class="w-full md:w-1/2 p-8">
