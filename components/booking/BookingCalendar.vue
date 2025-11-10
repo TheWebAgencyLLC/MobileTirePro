@@ -103,6 +103,9 @@
                             <span class="font-semibold dark:text-white">Total</span>
                             <span class="font-bold text-vivid-red">${{ calculateTotal() }}</span>
                         </div>
+                      <div class="text-xs italic dark:text-gray-400">
+                         includes service fee for your selected Zipcode
+                      </div>
                     </div>
                 </div>
 

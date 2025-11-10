@@ -67,12 +67,7 @@
             underline-offset-8
             decoration-vivid-red decoration-4">Log
             out</span>
-          <NuxtLink @click="closeMobileMenu" to="/tires" class="mr-2">
-            <button
-              class="w-full text-left bg-crimson-red text-pale-gray px-3 py-2 rounded-md hover:bg-vivid-red transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-vivid-red focus:ring-offset-2">
-              Order Tires
-            </button>
-          </NuxtLink>
+
           <NuxtLink @click="closeMobileMenu" to="/bookings">
             <button
               class="w-full text-left bg-vivid-red text-pale-gray px-3 py-2 rounded-md hover:bg-crimson-red transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-vivid-red focus:ring-offset-2">
@@ -142,12 +137,6 @@
             Log out
           </a>
           <div class="space-y-2">
-            <NuxtLink @click="closeMobileMenu" to="/tires" class="block mb-2">
-              <button
-                class="w-full text-left bg-vivid-red text-pale-gray px-3 py-2 rounded-md hover:bg-crimson-red transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-vivid-red focus:ring-offset-2">
-                Order Tires
-              </button>
-            </NuxtLink>
             <NuxtLink @click="closeMobileMenu" to="/bookings">
               <button
                 class="w-full text-left bg-vivid-red text-pale-gray px-3 py-2 rounded-md hover:bg-crimson-red transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-vivid-red focus:ring-offset-2">

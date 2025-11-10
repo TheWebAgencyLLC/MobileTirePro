@@ -52,7 +52,7 @@
     <div v-if="selectedService.tireCount == 1 || !selectedService.tireCount" class="space-y-4">
       <div class="flex justify-between items-center">
         <h3 class="text-xl font-semibold dark:text-white">{{selectedService.name}} Service</h3>
-        <span class="text-vivid-red font-bold">$75</span>
+
       </div>
       <p class="text-gray-600 dark:text-gray-400">
         {{ selectedService.description }}
@@ -166,7 +166,7 @@
     <div v-if="props.selectedService === 'rotation'" class="space-y-4">
       <div class="flex justify-between items-center">
         <h3 class="text-xl font-semibold dark:text-white">Rotation & Balance Service</h3>
-        <span class="text-vivid-red font-bold">$75</span>
+        <span class="text-vivid-red font-bold">$50</span>
       </div>
       <p class="text-gray-600 dark:text-gray-400">
         Includes complete rotation and balancing service with mobile fee
@@ -264,8 +264,8 @@ const serviceTitle = computed(() => {
 })
 
 const getServicePrice = computed(() => {
-  if (props.selectedService === 'repair') return 80
-  if (props.selectedService === 'rotation') return 75
+  if (props.selectedService === 'repair') return 25
+  if (props.selectedService === 'rotation') return 50
   if (props.selectedService === 'changeover') {
     if (changeoverType.value === 'assembly') {
       const basePrice = 125
@@ -286,7 +286,7 @@ const getServicePrice = computed(() => {
 
 const calculatePrice = computed(() => {
   if (props.selectedService === 'repair') return '$80'
-  if (props.selectedService === 'rotation') return '$75'
+  if (props.selectedService === 'rotation') return '50'
   if (props.selectedService === 'changeover') {
     if (changeoverType.value === 'assembly') {
       return `$${getServicePrice.value}`

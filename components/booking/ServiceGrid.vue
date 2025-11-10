@@ -62,6 +62,7 @@
       <div class="mt-2 space-y-1">
         <div class="text-sm text-gray-500">• Wheels/tire assemblies: $125 (includes storage)</div>
         <div class="text-sm text-gray-500">• Tires only: from $150 (includes storage)</div>
+        <div class="text-sm text-vivid-red">Please call or text before scheduling this service.</div>
       </div>
     </div>
 
