@@ -16,16 +16,16 @@
             <p class="text-sm text-gray-600 dark:text-gray-300">{{ service.description }}</p>
           </div>
           <span v-if="expandedService?._id === service._id" class="text-vivid-red text-lg ml-2">▲</span>
-          <span v-else-if="getTireCount(service) > 1" class="text-gray-400 text-lg ml-2">▼</span>
+          <span v-else class="text-gray-400 text-lg ml-2">▼</span>
         </div>
       </div>
 
-      <!-- Inline expansion for multi-tire services -->
-      <div v-if="expandedService?._id === service._id && getTireCount(service) > 1"
+      <!-- Inline expansion — always shown for all API services -->
+      <div v-if="expandedService?._id === service._id"
            class="px-4 pb-4 space-y-4 border-t dark:border-gray-700" @click.stop>
 
-        <!-- Rim Size -->
-        <div class="space-y-2 pt-4">
+        <!-- Rim Size (per-tire priced services: Installation, Repair) -->
+        <div v-if="isPricedPerTire(service)" class="space-y-2 pt-4">
           <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold">
             Rim Size
             <button @mouseenter="showRimTip = true" @mouseleave="showRimTip = false"
@@ -42,6 +42,7 @@
             <option v-for="size in rimSizes" :key="size" :value="size">{{ size }} inches</option>
           </select>
         </div>
+        <div v-else class="pt-4"></div>
 
         <!-- Tire Count -->
         <div class="space-y-2">
@@ -55,13 +56,17 @@
           </select>
         </div>
 
-        <div v-if="rimSize && tireCount" class="text-sm text-gray-600 dark:text-gray-400">
-          Base price: <span class="font-semibold text-vivid-red">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</span>
+        <div v-if="tireCount" class="text-sm text-gray-600 dark:text-gray-400">
+          Base price:
+          <span class="font-semibold text-vivid-red">
+            <template v-if="isPricedPerTire(service) && rimSize">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</template>
+            <template v-else-if="!isPricedPerTire(service)">${{ getPrice(service) }}</template>
+          </span>
           <span class="italic"> + service fee (added at checkout)</span>
         </div>
 
         <button @click="confirmServiceWithConfig(service)"
-                :disabled="!rimSize || !tireCount"
+                :disabled="isPricedPerTire(service) ? (!rimSize || !tireCount) : !tireCount"
                 class="w-full bg-vivid-red text-white py-3 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Continue to Scheduling
         </button>
@@ -230,32 +235,30 @@ const rimSizes = Array.from({ length: 11 }, (_, i) => i + 12) // 12–22 inches
 const getPrice = (service: any): number => service.Price ?? service.price ?? 0
 const getTireCount = (service: any): number => service.tireCount ?? service.maxTireCount ?? 0
 
+// Installation and Repair: price varies by rim size × tire count
+// Everything else (Rotation & Balance, etc.): flat fee
+const isPricedPerTire = (service: any): boolean =>
+  service.name.toLowerCase().includes('installation') ||
+  service.name.toLowerCase().includes('repair')
+
 const handleServiceClick = (service: any) => {
-  if (getTireCount(service) <= 1) {
-    // No config needed — emit immediately
-    emit('service-selected', {
-      service,
-      rimSize: null,
-      tireCount: getTireCount(service) || 1,
-      price: getPrice(service)
-    })
+  // Always expand all API services for configuration
+  if (expandedService.value?._id === service._id) {
+    expandedService.value = null
   } else {
-    // Toggle expansion for rim/tire config
-    if (expandedService.value?._id === service._id) {
-      expandedService.value = null
-    } else {
-      expandedService.value = service
-      rimSize.value = null
-      tireCount.value = null
-    }
+    expandedService.value = service
+    rimSize.value = null
+    tireCount.value = null
   }
 }
 
 const confirmServiceWithConfig = (service: any) => {
-  const basePrice = ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
+  const basePrice = isPricedPerTire(service)
+    ? ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
+    : getPrice(service)
   emit('service-selected', {
     service,
-    rimSize: rimSize.value,
+    rimSize: isPricedPerTire(service) ? rimSize.value : null,
     tireCount: tireCount.value,
     price: basePrice
   })
