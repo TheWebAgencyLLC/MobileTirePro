@@ -100,11 +100,11 @@
 
                     <div class="pt-3 border-t">
                         <div class="flex justify-between text-lg">
-                            <span class="font-semibold dark:text-white">Total</span>
+                            <span class="font-semibold dark:text-white">Base Price</span>
                             <span class="font-bold text-vivid-red">${{ calculateTotal() }}</span>
                         </div>
                       <div class="text-xs italic dark:text-gray-400">
-                         includes service fee for your selected Zipcode
+                         Service fee added at checkout
                       </div>
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                 <!-- Continue Button -->
                 <button v-if="selectedDate && selectedTime" @click="proceedToBooking"
                     class="w-full mt-6 bg-vivid-red text-white py-3 rounded-lg hover:bg-red-700 transition-colors">
-                    Continue to Booking
+                    Select This Time
                 </button>
             </div>
         </div>

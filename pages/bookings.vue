@@ -1,505 +1,370 @@
-<!-- pages/booking.vue -->
+<!-- pages/bookings.vue -->
 <script setup lang="ts">
-import { ref, computed } from 'vue'  // Add ref here
-import { useQuoteStore } from '~/stores/store'
+import { ref, computed, watch } from 'vue'
 import moment from 'moment-timezone'
 
-
 const ZIP_CODES = [
-  {
-    "name": "Algonquin",
-    "price": 50,
-    "zip": ["60013", "60102", "60118", "60142", "60156"]
-  },
-  {
-    "name": "Antioch",
-    "price": 75,
-    "zip": ["60002"]
-  },
-  {
-    "name": "Barrington",
-    "price": 75,
-    "zip": ["60010", "60011"]
-  },
-  {
-    "name": "Carpentersville",
-    "price": 75,
-    "zip": ["60102", "60110", "60118"]
-  },
-  {
-    "name": "Cary",
-    "price": 50,
-    "zip": ["60013"]
-  },
-  {
-    "name": "Crystal Lake",
-    "price": 50,
-    "zip": ["60012", "60014", "60039"]
-  },
-  {
-    "name": "Grayslake",
-    "price": 50,
-    "zip": ["60030"]
-  },
-  {
-    "name": "Gurnee",
-    "price": 75,
-    "zip": ["60031"]
-  },
-  {
-    "name": "Huntley",
-    "price": 50,
-    "zip": ["60142"]
-  },
-  {
-    "name": "Hawthorne Woods",
-    "price": 75,
-    "zip": ["60047", "60060"]
-  },
-  {
-    "name": "Island Lake",
-    "price": 50,
-    "zip": ["60042", "60051", "60084"]
-  },
-  {
-    "name": "Johnsburg",
-    "price": 50,
-    "zip": ["60050", "60051"]
-  },
-  {
-    "name": "Lake in the Hills",
-    "price": 50,
-    "zip": ["60102", "60156"]
-  },
-  {
-    "name": "Lake Villa",
-    "price": 75,
-    "zip": ["60046"]
-  },
-  {
-    "name": "Lake Zurich",
-    "price": 75,
-    "zip": ["60047", "60049"]
-  },
-  {
-    "name": "Lakemoor",
-    "price": 50,
-    "zip": ["60041", "60050", "60051", "60073"]
-  },
-  {
-    "name": "McHenry",
-    "price": 50,
-    "zip": ["60050", "60051"]
-  },
-  {
-    "name": "Richmond",
-    "price": 50,
-    "zip": ["60071"]
-  },
-  {
-    "name": "Ringwood",
-    "price": 50,
-    "zip": ["60072"]
-  },
-  {
-    "name": "Round Lake",
-    "price": 50,
-    "zip": ["60073"]
-  },
-  {
-    "name": "Spring grove",
-    "price": 50,
-    "zip": ["60081"]
-  },
-  {
-    "name": "Volo",
-    "price": 50,
-    "zip": ["60020", "60041", "60051", "60073"]
-  },
-  {
-    "name": "Wauconda",
-    "price": 50,
-    "zip": ["60084"]
-  },
-  {
-    "name": "Wonder Lake",
-    "price": 50,
-    "zip": ["60097"]
-  },
-  {
-    "name": "Woodstock",
-    "price": 50,
-    "zip": ["60098"]
-  }
+  { name: "Algonquin", price: 50, zip: ["60013", "60102", "60118", "60142", "60156"] },
+  { name: "Antioch", price: 75, zip: ["60002"] },
+  { name: "Barrington", price: 75, zip: ["60010", "60011"] },
+  { name: "Carpentersville", price: 75, zip: ["60102", "60110", "60118"] },
+  { name: "Cary", price: 50, zip: ["60013"] },
+  { name: "Crystal Lake", price: 50, zip: ["60012", "60014", "60039"] },
+  { name: "Grayslake", price: 50, zip: ["60030"] },
+  { name: "Gurnee", price: 75, zip: ["60031"] },
+  { name: "Huntley", price: 50, zip: ["60142"] },
+  { name: "Hawthorne Woods", price: 75, zip: ["60047", "60060"] },
+  { name: "Island Lake", price: 50, zip: ["60042", "60051", "60084"] },
+  { name: "Johnsburg", price: 50, zip: ["60050", "60051"] },
+  { name: "Lake in the Hills", price: 50, zip: ["60102", "60156"] },
+  { name: "Lake Villa", price: 75, zip: ["60046"] },
+  { name: "Lake Zurich", price: 75, zip: ["60047", "60049"] },
+  { name: "Lakemoor", price: 50, zip: ["60041", "60050", "60051", "60073"] },
+  { name: "McHenry", price: 50, zip: ["60050", "60051"] },
+  { name: "Richmond", price: 50, zip: ["60071"] },
+  { name: "Ringwood", price: 50, zip: ["60072"] },
+  { name: "Round Lake", price: 50, zip: ["60073"] },
+  { name: "Spring grove", price: 50, zip: ["60081"] },
+  { name: "Volo", price: 50, zip: ["60020", "60041", "60051", "60073"] },
+  { name: "Wauconda", price: 50, zip: ["60084"] },
+  { name: "Wonder Lake", price: 50, zip: ["60097"] },
+  { name: "Woodstock", price: 50, zip: ["60098"] }
 ]
 
-// State
-const selectedService = ref(null<Service>)
-const serviceDetails = ref(null)
-const showContactForm = ref(false)
-const showConfirmation = ref(false)
-const showSquareModal = ref(false);
-const SELECTED_ZIP_CODE = ref<string | null>(null);
-const SHOW_ZIP_CODE_SELECTION = ref<boolean>(false);
-const ZIP_CODE_SELECTION_ERROR = ref<boolean>(false);
-const IS_ZIP_CODE_VALID = ref<boolean>(false);
-const SERVICE_FEE = ref<number | null>(null);
-const DATE = ref<string | null>(null);
+// Step management
+const currentStep = ref(1)
+const STEPS = ['Service', 'Schedule', 'Details', 'Pay']
 
-// Store and Route
-const store = useQuoteStore()
-const route = useRoute()
-const $gtm = useGTM()
+// Service selection (from ServiceGrid)
+const selectedServiceDetails = ref<any>(null)
 
-// Form State
-const selectedCar = ref('')
-const address = ref({
-  street: '',
-  city: '',
-  zipcode: '',
-  State: 'IL'
-})
+// Scheduling
+const appointmentDate = ref<string | null>(null)
+
+// Contact form
+const guestName = ref('')
+const guestEmail = ref('')
 const phone = ref('')
+const address = ref({ street: '', city: '', zipcode: '' })
+const zipError = ref(false)
+const serviceFee = ref<number | null>(null)
 
+// Vehicle
+const vehicleYear = ref('')
+const vehicleMake = ref('')
+const vehicleModel = ref('')
+const selectedCar = ref<any>('')
+
+// Auth
 const isLoggedIn = ref(false)
+const carData = ref<any[]>([])
 
-// First check auth status
+// Confirmation
+const showConfirmation = ref(false)
+
+const $gtm = useGTM()
+const route = useRoute()
+
+// Auth check
 const { data: authData } = await useLazyFetch('/api/auth/test', {
   server: false,
   onResponse({ response }) {
-    isLoggedIn.value = response._data.token ? true : false
+    isLoggedIn.value = !!response._data.token
   }
 })
 
-// Then fetch cars only if logged in
-const { data: carData } = await useLazyFetch('/api/car/list', {
-  server: false,
-  enabled: isLoggedIn.value, // Only fetch if logged in
-  onResponse({ response }) {
-    console.log('Car data response:', response._data)
-    selectedCar.value = response._data[0]
+// Fetch cars once logged-in status is confirmed
+watch(isLoggedIn, async (loggedIn) => {
+  if (loggedIn) {
+    const data = await $fetch<any[]>('/api/car/list')
+    carData.value = data
+    if (data.length > 0) selectedCar.value = data[0]
   }
 })
 
-// Form Validation
-const isFormValid = computed(() => {
-  return selectedCar.value &&
-    address.value.street &&
-    address.value.city &&
-    address.value.zipcode &&
-    phone.value
+// Zip validation
+watch(() => address.value.zipcode, (zip) => {
+  zipError.value = false
+  serviceFee.value = null
+  if (zip.length === 5) {
+    const city = ZIP_CODES.find(c => c.zip.includes(zip))
+    if (city) {
+      serviceFee.value = city.price
+    } else {
+      zipError.value = true
+    }
+  }
+})
+
+// Total price
+const totalPrice = computed(() => {
+  return (selectedServiceDetails.value?.price || 0) + (serviceFee.value || 0)
+})
+
+// Step 3 form validity
+const isStep3Valid = computed(() => {
+  const addressValid = address.value.street && address.value.city && address.value.zipcode && serviceFee.value && !zipError.value
+  const phoneValid = !!phone.value
+
+  if (isLoggedIn.value && carData.value.length > 0) {
+    return addressValid && phoneValid && selectedCar.value
+  }
+  if (isLoggedIn.value) {
+    // Logged in but no saved cars — use text inputs
+    return addressValid && phoneValid && vehicleYear.value && vehicleMake.value && vehicleModel.value
+  }
+  // Guest
+  return addressValid && phoneValid && guestName.value && guestEmail.value && vehicleYear.value && vehicleMake.value && vehicleModel.value
 })
 
 // Handlers
-const handleServiceSelection = (service) => {
-  selectedService.value = service
-  serviceDetails.value = null
-
-  $gtm.trackEvent({
-    event: 'serviceSelection',
-    servicesLink: service
-  })
+const handleServiceSelected = (details: any) => {
+  selectedServiceDetails.value = details
+  $gtm.trackEvent({ event: 'serviceSelection', servicesLink: details.service })
+  currentStep.value = 2
 }
 
-const handleServiceDetails = (details) => {
-  serviceDetails.value = details
-}
-
-const handleBookingProceed = (bookingDetails) => {
-  DATE.value = bookingDetails.appointmentDate
-  showContactForm.value = true
-}
-
-const handleBack = () => {
-  selectedService.value = null
-  serviceDetails.value = null
+const handleDateSelected = (bookingDetails: any) => {
+  appointmentDate.value = bookingDetails.appointmentDate
+  currentStep.value = 3
 }
 
 const handleSubmitBooking = async () => {
   try {
+    const vehicleInfoStr = (isLoggedIn.value && selectedCar.value && carData.value.length > 0)
+      ? `${selectedCar.value.year} ${selectedCar.value.make} ${selectedCar.value.model}`
+      : `${vehicleYear.value} ${vehicleMake.value} ${vehicleModel.value}`
+
     const response = await $fetch('/api/apts/create', {
       method: 'POST',
       body: {
-        appointmentDate: DATE.value,
-        carId: selectedCar.value,
-        service: serviceDetails.value.service.name,
-        address: `${address.value.street} ${address.value.city} ${address.value.State} ${address.value.zipcode}`,
+        appointmentDate: appointmentDate.value,
+        carId: (isLoggedIn.value && selectedCar.value?._id) ? selectedCar.value._id : undefined,
+        service: selectedServiceDetails.value.service.name,
+        address: `${address.value.street} ${address.value.city} IL ${address.value.zipcode}`,
         phone: phone.value,
-        rimSize: serviceDetails.value.rimSize,
-        tireCount: serviceDetails.value.tireCount,
-
+        rimSize: selectedServiceDetails.value.rimSize,
+        tireCount: selectedServiceDetails.value.tireCount,
+        guestName: isLoggedIn.value ? undefined : guestName.value,
+        guestEmail: isLoggedIn.value ? undefined : guestEmail.value,
+        vehicleInfo: vehicleInfoStr,
       }
     })
 
-    if (response === "OK") {
-      showContactForm.value = false
+    if (response === 'OK') {
       showConfirmation.value = true
-
-      //   store.saveQuote(
-      //       address.value,
-      //       serviceDetails.value.service,
-      //       serviceDetails.value.tpmCount || 0,
-      //       phone.value,
-      //       serviceDetails.value.appointmentDate,
-      //       serviceDetails.value.price
-      //   )
     }
   } catch (error) {
     console.error('Error creating appointment:', error)
   }
 }
-
-
-// Watcher for changes in the selected zip code
-watch(SELECTED_ZIP_CODE, (newValue) => {
-  // Reset the error flag on each new input
-  ZIP_CODE_SELECTION_ERROR.value = false;
-
-  // Only validate when we have a full 5-digit zip code
-  if (newValue.length === 5) {
-    // Check if any city in ZIP_CODES has this zip in its array
-    const zipExists = ZIP_CODES.some(city => city.zip.includes(newValue));
-    if (zipExists) {
-      IS_ZIP_CODE_VALID.value = true;
-    } else {
-      ZIP_CODE_SELECTION_ERROR.value = true;
-    }
-  }
-});
-
-// Function to handle setting the service fee based on the selected zip code
-const HANDLE_SERVICE_FEE = () => {
-  if (!IS_ZIP_CODE_VALID.value) return;  // Do nothing if zip code is not valid
-
-  // Find the city object whose zip array contains the selected zip code
-  const city = ZIP_CODES.find(city => city.zip.includes(SELECTED_ZIP_CODE.value));
-  if (city) {
-    // Set service fee to the city's price and update the address zipcode
-    SERVICE_FEE.value = city.price;
-    address.value.zipcode = SELECTED_ZIP_CODE.value;
-  } else {
-    // Fallback (no city found for this zip)
-    SERVICE_FEE.value = 0;
-  }
-  console.log(SERVICE_FEE.value);
-};
-
-const showCalendar = ref<boolean>(false);
-
-const handleNextStep = () => {
-  showCalendar.value = true;
-}
-
-const saveBookingState = () => {
-  const bookingState = {
-    selectedService: selectedService.value,
-    serviceDetails: serviceDetails.value,
-    showContactForm: showContactForm.value,
-    selectedCar: selectedCar.value,
-    address: address.value,
-    phone: phone.value,
-    date: DATE.value,
-    selectedZipCode: SELECTED_ZIP_CODE.value,
-    serviceFee: SERVICE_FEE.value
-  };
-
-  localStorage.setItem('bookingState', JSON.stringify(bookingState));
-};
-
-// Restore booking state after login redirect
-const restoreBookingState = () => {
-  const savedState = localStorage.getItem('bookingState');
-
-  if (savedState) {
-    try {
-      const bookingState = JSON.parse(savedState);
-
-      // Restore state values
-      selectedService.value = bookingState.selectedService;
-      serviceDetails.value = bookingState.serviceDetails;
-      showContactForm.value = bookingState.showContactForm;
-      selectedCar.value = bookingState.selectedCar;
-      address.value = bookingState.address;
-      phone.value = bookingState.phone;
-      DATE.value = bookingState.date;
-      SELECTED_ZIP_CODE.value = bookingState.selectedZipCode;
-      SERVICE_FEE.value = bookingState.serviceFee;
-
-      // Clear stored state after restoration
-      localStorage.removeItem('bookingState');
-    } catch (error) {
-      console.error('Error restoring booking state:', error);
-    }
-  }
-};
-
-// Call this in onMounted hook
-onMounted(() => {
-  restoreBookingState();
-});
-
-
-
 </script>
 
 <template>
+  <div class="max-w-3xl mx-auto px-4 py-8">
 
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="mb-8 ml-0 md:ml-8">
-      <h1 class="text-2xl font-bold dark:text-white">Schedule Your Service</h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">Select a service to get started</p>
+    <!-- Step Progress Indicator -->
+    <div v-if="!showConfirmation" class="flex items-center justify-center mb-10">
+      <template v-for="(label, i) in STEPS" :key="i">
+        <div class="flex flex-col items-center">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+               :class="currentStep > i + 1
+                 ? 'bg-vivid-red text-white'
+                 : currentStep === i + 1
+                   ? 'bg-vivid-red text-white ring-2 ring-vivid-red ring-offset-2'
+                   : 'bg-gray-200 dark:bg-gray-700 text-gray-500'">
+            <span v-if="currentStep > i + 1">✓</span>
+            <span v-else>{{ i + 1 }}</span>
+          </div>
+          <span class="text-xs mt-1.5 dark:text-gray-400 hidden sm:block">{{ label }}</span>
+        </div>
+        <div v-if="i < STEPS.length - 1" class="w-12 h-0.5 mb-4 mx-1 transition-colors"
+             :class="currentStep > i + 1 ? 'bg-vivid-red' : 'bg-gray-200 dark:bg-gray-600'"></div>
+      </template>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-8">
-      <div v-if="!SERVICE_FEE"
-        class="rounded-lg border w-full md:w-2/3 lg:w-1/3 p-4 flex flex-col space-y-3 ml-0 md:ml-8">
-        <div class="text-xl font-bold dark:text-white">
-          Please select the Zip Code where you would like to be serviced.
-        </div>
-        <div class="flex flex-col space-y-2">
-          <label class="text-sm text-gray-600 dark:text-gray-300">Zip code:</label>
-          <input class="px-3 py-2 bg-transparent border rounded-lg dark:text-white focus:outline-none" :class="[
-            ZIP_CODE_SELECTION_ERROR ? 'border-vivid-red' : 'border-gray-300'
-          ]" v-model="SELECTED_ZIP_CODE" type="text" placeholder="e.g 60102">
-        </div>
-        <div class="min-h-6">
-          <span v-if="ZIP_CODE_SELECTION_ERROR" class="text-vivid-red text-sm italic">
-            Sorry, we don't provide services in your area.
-          </span>
-        </div>
-        <div class="text-right mt-2">
-          <button @click="HANDLE_SERVICE_FEE" class="bg-vivid-red px-4 py-2 rounded-lg font-medium" :class="[
-            ZIP_CODE_SELECTION_ERROR
-              ? 'cursor-not-allowed opacity-50 text-white/80'
-              : 'text-white hover:bg-vivid-red/90 transition-colors'
-          ]" :disabled="ZIP_CODE_SELECTION_ERROR">
-            Continue
-          </button>
-        </div>
+    <!-- ───────────────────────────── STEP 1: Pick Service ───────────────────────────── -->
+    <div v-if="currentStep === 1 && !showConfirmation">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold dark:text-white">Schedule Your Service</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Select a service to get started</p>
       </div>
-      <!-- Left Column - Dynamic Content -->
-      <div v-if="SERVICE_FEE && !showContactForm" class="lg:w-1/2 relative">
-        <!-- Back button when showing details -->
-        <button v-if="selectedService" @click="handleBack"
-          class="mb-4 text-vivid-red hover:text-red-700 flex items-center gap-2">
-          ← Start over
+      <BookingServiceGrid @service-selected="handleServiceSelected" />
+    </div>
+
+    <!-- ───────────────────────────── STEP 2: Pick Date & Time ───────────────────────────── -->
+    <div v-if="currentStep === 2 && !showConfirmation">
+      <div class="flex items-center gap-4 mb-6">
+        <button @click="currentStep = 1" class="text-vivid-red hover:text-red-700 flex items-center gap-1 text-sm">
+          ← Back
         </button>
-
-        <!-- Wrap components in a div inside Transition -->
-        <Transition name="fade" mode="out-in">
-          <div :class="[serviceDetails ? 'hidden lg:flex' : 'flex']">
-            <BookingServiceGrid v-if="!selectedService" :selected-service="selectedService"
-              :query="$route.query.service" @service-selected="(n) => selectedService = n" />
-            <BookingServiceDetail v-else :selected-service="selectedService" :service-fee="SERVICE_FEE"
-              @ready-for-scheduling="handleServiceDetails" @next="handleNextStep" />
-          </div>
-        </Transition>
+        <div>
+          <h2 class="text-2xl font-bold dark:text-white">Pick a Date & Time</h2>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">
+            {{ selectedServiceDetails?.service?.name }}
+          </p>
+        </div>
       </div>
-
-      <!-- Right Column - Calendar -->
-      <div v-if="!showContactForm" class="lg:w-1/2">
-        <BookingCalendar v-if="serviceDetails" :selected-service="serviceDetails"
-          @proceed-to-booking="(n) => handleBookingProceed(n)" />
-      </div>
-    </div>
-    <button v-if="showSquareModal && !showConfirmation"
-      @click="() => { showSquareModal = false; showContactForm = true }"
-      class="mb-4 text-vivid-red hover:text-red-700 flex items-start justify-start text-left gap-2">
-      ← Start over
-    </button>
-    <div v-if="showSquareModal && !showConfirmation" class="flex flex-col items-center justify-center z-50">
-
-      <SquarePayment :price="serviceDetails.price" @payment="handleSubmitBooking" />
+      <BookingCalendar
+        :selected-service="selectedServiceDetails"
+        @proceed-to-booking="handleDateSelected"
+      />
     </div>
 
-    <!-- Contact/Location Form -->
-    <div v-if="showContactForm && !showSquareModal" class="flex items-center justify-center">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full mx-4">
-        <h2 class="text-xl font-bold mb-6 dark:text-white">Complete Your Booking</h2>
+    <!-- ───────────────────────────── STEP 3: Your Details ───────────────────────────── -->
+    <div v-if="currentStep === 3 && !showConfirmation">
+      <div class="flex items-center gap-4 mb-6">
+        <button @click="currentStep = 2" class="text-vivid-red hover:text-red-700 flex items-center gap-1 text-sm">
+          ← Back
+        </button>
+        <h2 class="text-2xl font-bold dark:text-white">Your Details</h2>
+      </div>
 
-        <!-- Vehicle Selection -->
-        <div class="mb-6">
-          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-            Select Vehicle
-          </label>
-          <div v-if="!isLoggedIn" class="text-gray-600">
-            Please
-            <NuxtLink @click="saveBookingState" :to="{ path: '/login', query: { redirect: $route.fullPath } }"
-              class="text-vivid-red hover:underline">login</NuxtLink>
-            to select your vehicle
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm space-y-5">
+
+        <!-- Guest-only fields: Name & Email -->
+        <template v-if="!isLoggedIn">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Full Name</label>
+              <input v-model="guestName" type="text" placeholder="Jane Smith"
+                     class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Email</label>
+              <input v-model="guestEmail" type="email" placeholder="jane@example.com"
+                     class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
           </div>
-          <select v-else v-model="selectedCar"
-            class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            <option value="" disabled>Select a Vehicle</option>
+        </template>
+
+        <!-- Phone -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Phone</label>
+          <input v-model="phone" type="tel" placeholder="(555) 555-5555"
+                 class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        </div>
+
+        <!-- Service Address -->
+        <div class="space-y-3">
+          <h3 class="text-gray-700 dark:text-gray-300 text-sm font-bold">Service Address</h3>
+          <input v-model="address.street" type="text" placeholder="Street address"
+                 class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+          <div class="grid grid-cols-2 gap-3">
+            <input v-model="address.city" type="text" placeholder="City"
+                   class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <div>
+              <input v-model="address.zipcode" type="text" maxlength="5" placeholder="Zip code"
+                     class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                     :class="zipError ? 'border-vivid-red' : ''">
+              <p v-if="zipError" class="text-vivid-red text-xs mt-1 italic">
+                Sorry, we don't serve this zip code yet.
+              </p>
+              <p v-if="serviceFee !== null && !zipError" class="text-green-600 dark:text-green-400 text-xs mt-1">
+                Service fee: ${{ serviceFee }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Vehicle</label>
+
+          <!-- Logged-in with saved cars -->
+          <select v-if="isLoggedIn && carData.length > 0" v-model="selectedCar"
+                  class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <option value="" disabled>Select a vehicle</option>
             <option v-for="car in carData" :key="car._id" :value="car">
               {{ car.year }} {{ car.make }} {{ car.model }}
             </option>
           </select>
-        </div>
 
-        <!-- Address Form -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-              Street Address
-            </label>
-            <input v-model="address.street" type="text"
-              class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-              City
-            </label>
-            <input v-model="address.city" type="text"
-              class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-              State
-            </label>
-            <select v-model="address.State"
-              class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-              <option>IL</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-              Zip Code
-            </label>
-            <input v-model="address.zipcode" type="text"
-              class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+          <!-- Guest or logged-in without saved cars -->
+          <div v-else class="grid grid-cols-3 gap-2">
+            <input v-model="vehicleYear" type="text" placeholder="Year"
+                   class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <input v-model="vehicleMake" type="text" placeholder="Make"
+                   class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <input v-model="vehicleModel" type="text" placeholder="Model"
+                   class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
           </div>
         </div>
 
-        <!-- Phone -->
-        <div class="mb-6">
-          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-            Contact Phone
-          </label>
-          <input v-model="phone" type="tel"
-            class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <!-- Price Summary -->
+        <div v-if="serviceFee !== null" class="border-t dark:border-gray-700 pt-4">
+          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+            <span>{{ selectedServiceDetails?.service?.name }}</span>
+            <span>${{ selectedServiceDetails?.price }}</span>
+          </div>
+          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <span>Service fee</span>
+            <span>${{ serviceFee }}</span>
+          </div>
+          <div class="flex justify-between font-bold dark:text-white mt-2 text-lg">
+            <span>Total</span>
+            <span class="text-vivid-red">${{ totalPrice }}</span>
+          </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-end gap-4">
-          <button @click="showContactForm = false" class="px-4 py-2 text-gray-600 hover:text-gray-800">
-            Cancel
-          </button>
-          <button @click="showSquareModal = true" :disabled="!isFormValid"
-            class="px-4 py-2 bg-vivid-red text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
-            Confirm Booking
+        <!-- Continue to Payment -->
+        <div class="flex justify-end">
+          <button @click="currentStep = 4"
+                  :disabled="!isStep3Valid"
+                  class="px-6 py-3 bg-vivid-red text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+            Continue to Payment
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Confirmation Modal -->
+    <!-- ───────────────────────────── STEP 4: Pay ───────────────────────────── -->
+    <div v-if="currentStep === 4 && !showConfirmation">
+      <div class="flex items-center gap-4 mb-6">
+        <button @click="currentStep = 3" class="text-vivid-red hover:text-red-700 flex items-center gap-1 text-sm">
+          ← Back
+        </button>
+        <h2 class="text-2xl font-bold dark:text-white">Payment</h2>
+      </div>
+
+      <!-- Summary recap -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-6 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+        <div class="flex justify-between">
+          <span>Service</span>
+          <span class="font-medium dark:text-white">{{ selectedServiceDetails?.service?.name }}</span>
+        </div>
+        <div v-if="selectedServiceDetails?.rimSize" class="flex justify-between">
+          <span>Rim Size</span>
+          <span class="font-medium dark:text-white">{{ selectedServiceDetails.rimSize }}"</span>
+        </div>
+        <div v-if="selectedServiceDetails?.tireCount" class="flex justify-between">
+          <span>Tires</span>
+          <span class="font-medium dark:text-white">{{ selectedServiceDetails.tireCount }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Appointment</span>
+          <span class="font-medium dark:text-white">{{ moment(appointmentDate).format('h:mm A, MMM D') }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Address</span>
+          <span class="font-medium dark:text-white text-right">{{ address.street }}, {{ address.city }} IL {{ address.zipcode }}</span>
+        </div>
+        <div class="border-t dark:border-gray-700 pt-2 flex justify-between font-bold text-base dark:text-white">
+          <span>Total</span>
+          <span class="text-vivid-red">${{ totalPrice }}</span>
+        </div>
+      </div>
+
+      <SquarePayment :price="totalPrice" @payment="handleSubmitBooking" />
+    </div>
+
+    <!-- ───────────────────────────── CONFIRMATION ───────────────────────────── -->
     <div v-if="showConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-center">
         <h2 class="text-2xl font-bold mb-4 dark:text-white">Appointment Booked!</h2>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
           Your appointment has been successfully scheduled.
+          <span v-if="!isLoggedIn"> A confirmation has been sent to {{ guestEmail }}.</span>
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Please be advised that our service is weather based. We cannot work in
@@ -512,6 +377,7 @@ onMounted(() => {
         </NuxtLink>
       </div>
     </div>
+
   </div>
 </template>
 

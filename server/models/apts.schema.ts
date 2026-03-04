@@ -38,6 +38,15 @@ export const aptsSchema = defineMongooseModel({
             type: 'string',
             enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed'],
             default: 'Pending'
+        },
+        guestName: {
+            type: 'string',
+        },
+        guestEmail: {
+            type: 'string',
+        },
+        vehicleInfo: {
+            type: 'string',
         }
     }
 });
