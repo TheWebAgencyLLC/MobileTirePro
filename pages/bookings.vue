@@ -98,7 +98,10 @@ watch(() => address.value.zipcode, (zip) => {
 
 // Total price
 const totalPrice = computed(() => {
-  return (selectedServiceDetails.value?.price || 0) + (serviceFee.value || 0)
+  return (selectedServiceDetails.value?.price || 0)
+    + (serviceFee.value || 0)
+    + (selectedServiceDetails.value?.shopSuppliesFee || 0)
+    + (selectedServiceDetails.value?.tireDisposalFee || 0)
 })
 
 // Step 3 form validity
@@ -297,6 +300,14 @@ const handleSubmitBooking = async () => {
             <span>{{ selectedServiceDetails?.service?.name }}</span>
             <span>${{ selectedServiceDetails?.price }}</span>
           </div>
+          <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <span>Shop supplies</span>
+            <span>${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
+          </div>
+          <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <span>Tire disposal</span>
+            <span>${{ selectedServiceDetails.tireDisposalFee.toFixed(2) }}</span>
+          </div>
           <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
             <span>Service fee</span>
             <span>${{ serviceFee }}</span>
@@ -348,6 +359,14 @@ const handleSubmitBooking = async () => {
         <div class="flex justify-between">
           <span>Address</span>
           <span class="font-medium dark:text-white text-right">{{ address.street }}, {{ address.city }} IL {{ address.zipcode }}</span>
+        </div>
+        <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between">
+          <span>Shop supplies</span>
+          <span class="font-medium dark:text-white">${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
+        </div>
+        <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between">
+          <span>Tire disposal</span>
+          <span class="font-medium dark:text-white">${{ selectedServiceDetails.tireDisposalFee.toFixed(2) }}</span>
         </div>
         <div class="border-t dark:border-gray-700 pt-2 flex justify-between font-bold text-base dark:text-white">
           <span>Total</span>

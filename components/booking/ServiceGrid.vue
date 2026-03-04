@@ -56,13 +56,18 @@
           </select>
         </div>
 
-        <div v-if="tireCount" class="text-sm text-gray-600 dark:text-gray-400">
-          Base price:
-          <span class="font-semibold text-vivid-red">
-            <template v-if="isPricedPerTire(service) && rimSize">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</template>
-            <template v-else-if="!isPricedPerTire(service)">${{ getPrice(service) }}</template>
-          </span>
-          <span class="italic"> + service fee (added at checkout)</span>
+        <div v-if="tireCount" class="text-sm text-gray-600 dark:text-gray-400 space-y-0.5">
+          <div>Base price:
+            <span class="font-semibold text-vivid-red">
+              <template v-if="isPricedPerTire(service) && rimSize">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</template>
+              <template v-else-if="!isPricedPerTire(service)">${{ getPrice(service) }}</template>
+            </span>
+          </div>
+          <template v-if="service.name.toLowerCase().includes('installation') && rimSize && tireCount">
+            <div>Shop supplies: <span class="font-semibold">${{ (3.5 * tireCount).toFixed(2) }}</span></div>
+            <div>Tire disposal: <span class="font-semibold">${{ (4 * tireCount).toFixed(2) }}</span></div>
+          </template>
+          <div><span class="italic">+ service fee (added at checkout)</span></div>
         </div>
 
         <button @click="confirmServiceWithConfig(service)"
@@ -123,7 +128,7 @@
         <div v-if="changeoverType" class="flex items-center justify-between border-t dark:border-gray-700 pt-4">
           <div>
             <h4 class="font-semibold dark:text-white">Add Seasonal Storage</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Store your tires until next season — +$25</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Store your tires until next season — +$49.95</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="includeStorage" class="sr-only peer">
@@ -244,11 +249,16 @@ const isPricedPerTire = (service: any): boolean =>
 const handleServiceClick = (service: any) => {
   // tireCount <= 1 means no configuration needed — emit immediately
   if (getTireCount(service) <= 1) {
+    const isRepair = service.name.toLowerCase().includes('repair')
+    const isRotation = service.name.toLowerCase().includes('rotation')
+    const shopSuppliesFee = isRepair ? 3.50 : isRotation ? 14 : 0
     emit('service-selected', {
       service,
       rimSize: null,
       tireCount: getTireCount(service) || 1,
-      price: getPrice(service)
+      price: getPrice(service),
+      shopSuppliesFee,
+      tireDisposalFee: 0
     })
     return
   }
@@ -263,14 +273,19 @@ const handleServiceClick = (service: any) => {
 }
 
 const confirmServiceWithConfig = (service: any) => {
+  const isInstallation = service.name.toLowerCase().includes('installation')
   const basePrice = isPricedPerTire(service)
     ? ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
     : getPrice(service)
+  const shopSuppliesFee = isInstallation ? 3.50 * (tireCount.value || 0) : 0
+  const tireDisposalFee = isInstallation ? 4 * (tireCount.value || 0) : 0
   emit('service-selected', {
     service,
     rimSize: isPricedPerTire(service) ? rimSize.value : null,
     tireCount: tireCount.value,
-    price: basePrice
+    price: basePrice,
+    shopSuppliesFee,
+    tireDisposalFee
   })
 }
 
@@ -291,11 +306,11 @@ const confirmChangeover = () => {
   let serviceName: string
 
   if (changeoverType.value === 'assembly') {
-    price = 125 + (includeStorage.value ? 25 : 0)
+    price = 125 + (includeStorage.value ? 49.95 : 0)
     serviceName = 'Seasonal Changeover (Assembly)'
   } else {
     const pricePerTire = (rimSize.value || 0) <= 18 ? 25 : 30
-    price = pricePerTire * (tireCount.value || 0) + (includeStorage.value ? 25 : 0)
+    price = pricePerTire * (tireCount.value || 0) + (includeStorage.value ? 49.95 : 0)
     serviceName = 'Seasonal Changeover (Tires Only)'
   }
 
