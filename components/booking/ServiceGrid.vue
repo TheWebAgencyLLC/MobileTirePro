@@ -11,21 +11,21 @@
           <div>
             <h3 class="text-lg font-semibold dark:text-white">{{ service.name }}</h3>
             <span class="text-vivid-red font-bold my-1 block">
-              {{ service.name.includes('Tire Installation') ? 'Starting at $' + service.price : '$' + service.price }}
+              {{ service.name.includes('Tire Installation') ? 'Starting at $' + getPrice(service) : '$' + getPrice(service) }}
             </span>
             <p class="text-sm text-gray-600 dark:text-gray-300">{{ service.description }}</p>
           </div>
-          <span v-if="expandedService?._id === service._id" class="text-vivid-red text-lg">▲</span>
-          <span v-else-if="service.maxTireCount > 1" class="text-gray-400 text-lg">▼</span>
+          <span v-if="expandedService?._id === service._id" class="text-vivid-red text-lg ml-2">▲</span>
+          <span v-else-if="getTireCount(service) > 1" class="text-gray-400 text-lg ml-2">▼</span>
         </div>
       </div>
 
       <!-- Inline expansion for multi-tire services -->
-      <div v-if="expandedService?._id === service._id && service.maxTireCount > 1"
+      <div v-if="expandedService?._id === service._id && getTireCount(service) > 1"
            class="px-4 pb-4 space-y-4 border-t dark:border-gray-700" @click.stop>
 
-        <!-- Rim Size (only for per-tire-priced services: Installation, Repair) -->
-        <div v-if="needsRimSize(service)" class="space-y-2 pt-4">
+        <!-- Rim Size -->
+        <div class="space-y-2 pt-4">
           <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold">
             Rim Size
             <button @mouseenter="showRimTip = true" @mouseleave="showRimTip = false"
@@ -42,7 +42,6 @@
             <option v-for="size in rimSizes" :key="size" :value="size">{{ size }} inches</option>
           </select>
         </div>
-        <div v-else class="pt-4"></div>
 
         <!-- Tire Count -->
         <div class="space-y-2">
@@ -50,23 +49,19 @@
           <select v-model.number="tireCount"
                   class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
             <option value="" disabled>Select number of tires</option>
-            <option v-for="count in tireCountOptions(service)" :key="count" :value="count">
+            <option v-for="count in [1, 2, 3, 4]" :key="count" :value="count">
               {{ count }} {{ count === 1 ? 'Tire' : 'Tires' }}
             </option>
           </select>
         </div>
 
-        <div v-if="tireCount" class="text-sm text-gray-600 dark:text-gray-400">
-          Base price:
-          <span class="font-semibold text-vivid-red">
-            <template v-if="needsRimSize(service) && rimSize">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</template>
-            <template v-else-if="!needsRimSize(service)">${{ service.price }}</template>
-          </span>
+        <div v-if="rimSize && tireCount" class="text-sm text-gray-600 dark:text-gray-400">
+          Base price: <span class="font-semibold text-vivid-red">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</span>
           <span class="italic"> + service fee (added at checkout)</span>
         </div>
 
         <button @click="confirmServiceWithConfig(service)"
-                :disabled="needsRimSize(service) ? (!rimSize || !tireCount) : !tireCount"
+                :disabled="!rimSize || !tireCount"
                 class="w-full bg-vivid-red text-white py-3 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Continue to Scheduling
         </button>
@@ -84,8 +79,8 @@
             <span class="text-vivid-red font-bold block my-1">From $125</span>
             <p class="text-sm text-gray-600 dark:text-gray-300">Swap summer/winter tires — two options available</p>
           </div>
-          <span v-if="expandedService?.name === 'Seasonal Changeover'" class="text-vivid-red text-lg">▲</span>
-          <span v-else class="text-gray-400 text-lg">▼</span>
+          <span v-if="expandedService?.name === 'Seasonal Changeover'" class="text-vivid-red text-lg ml-2">▲</span>
+          <span v-else class="text-gray-400 text-lg ml-2">▼</span>
         </div>
       </div>
 
@@ -202,7 +197,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Service } from '~/types'
 
 const { data: FETCHED_SERVICES } = await useFetch('/api/services/list', {
   method: 'GET',
@@ -215,6 +209,7 @@ const SEASONAL_CHANGEOVER = {
   name: 'Seasonal Changeover',
   description: 'Swap summer/winter tires with seasonal storage option',
   Price: 125,
+  price: 125,
   tireCount: 4,
   isActive: true
 }
@@ -231,26 +226,21 @@ const showTPMSModal = ref(false)
 
 const rimSizes = Array.from({ length: 11 }, (_, i) => i + 12) // 12–22 inches
 
-// Services where price is calculated per-tire × rim size (vs flat fee)
-const needsRimSize = (service: any) =>
-  service.name.toLowerCase().includes('installation') ||
-  service.name.toLowerCase().includes('repair')
-
-// Build tire count options 1..maxTireCount
-const tireCountOptions = (service: any): number[] =>
-  Array.from({ length: service.maxTireCount || 4 }, (_, i) => i + 1)
+// Handle both DB field name variants (Price/price, tireCount/maxTireCount)
+const getPrice = (service: any): number => service.Price ?? service.price ?? 0
+const getTireCount = (service: any): number => service.tireCount ?? service.maxTireCount ?? 0
 
 const handleServiceClick = (service: any) => {
-  if (!service.maxTireCount || service.maxTireCount === 1) {
+  if (getTireCount(service) <= 1) {
     // No config needed — emit immediately
     emit('service-selected', {
       service,
       rimSize: null,
-      tireCount: service.maxTireCount || 1,
-      price: service.price
+      tireCount: getTireCount(service) || 1,
+      price: getPrice(service)
     })
   } else {
-    // Toggle expansion for config
+    // Toggle expansion for rim/tire config
     if (expandedService.value?._id === service._id) {
       expandedService.value = null
     } else {
@@ -262,12 +252,10 @@ const handleServiceClick = (service: any) => {
 }
 
 const confirmServiceWithConfig = (service: any) => {
-  const basePrice = needsRimSize(service)
-    ? ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
-    : service.price
+  const basePrice = ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
   emit('service-selected', {
     service,
-    rimSize: needsRimSize(service) ? rimSize.value : null,
+    rimSize: rimSize.value,
     tireCount: tireCount.value,
     price: basePrice
   })
@@ -317,11 +305,11 @@ onMounted(() => {
     expandedService.value = SEASONAL_CHANGEOVER
   }
   if (route.query?.service?.includes('tirerepair')) {
-    const target = FETCHED_SERVICES?.value?.find((s: Service) => s.name.includes('Tire Repair'))
+    const target = FETCHED_SERVICES?.value?.find((s: any) => s.name.includes('Tire Repair'))
     if (target) handleServiceClick(target)
   }
   if (route.query?.service?.includes('installation')) {
-    const target = FETCHED_SERVICES?.value?.find((s: Service) => s.name.includes('Tire Installation'))
+    const target = FETCHED_SERVICES?.value?.find((s: any) => s.name.includes('Tire Installation'))
     if (target) expandedService.value = target
   }
 })
