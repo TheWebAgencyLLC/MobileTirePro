@@ -16,7 +16,7 @@
             <p class="text-sm text-gray-600 dark:text-gray-300">{{ service.description }}</p>
           </div>
           <span v-if="expandedService?._id === service._id" class="text-vivid-red text-lg ml-2">▲</span>
-          <span v-else class="text-gray-400 text-lg ml-2">▼</span>
+          <span v-else-if="getTireCount(service) > 1" class="text-gray-400 text-lg ml-2">▼</span>
         </div>
       </div>
 
@@ -242,17 +242,17 @@ const isPricedPerTire = (service: any): boolean =>
   service.name.toLowerCase().includes('repair')
 
 const handleServiceClick = (service: any) => {
-  // Repair is always 1 tire — emit immediately, no expansion needed
-  if (service.name.toLowerCase().includes('repair')) {
+  // tireCount <= 1 means no configuration needed — emit immediately
+  if (getTireCount(service) <= 1) {
     emit('service-selected', {
       service,
       rimSize: null,
-      tireCount: 1,
+      tireCount: getTireCount(service) || 1,
       price: getPrice(service)
     })
     return
   }
-  // All other services expand for configuration
+  // Multi-tire services expand for rim size / tire count config
   if (expandedService.value?._id === service._id) {
     expandedService.value = null
   } else {
