@@ -242,7 +242,17 @@ const isPricedPerTire = (service: any): boolean =>
   service.name.toLowerCase().includes('repair')
 
 const handleServiceClick = (service: any) => {
-  // Always expand all API services for configuration
+  // Repair is always 1 tire — emit immediately, no expansion needed
+  if (service.name.toLowerCase().includes('repair')) {
+    emit('service-selected', {
+      service,
+      rimSize: null,
+      tireCount: 1,
+      price: getPrice(service)
+    })
+    return
+  }
+  // All other services expand for configuration
   if (expandedService.value?._id === service._id) {
     expandedService.value = null
   } else {
