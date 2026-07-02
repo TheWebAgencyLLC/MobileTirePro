@@ -11,7 +11,7 @@
                     Order Your Tires and Schedule Installation
                 </h1>
                 <div class="bg-red-100 text-red-600 px-6 py-2 rounded-md">
-                    Mobile Tire Pro offers a wide selection of tires from trusted brands. Order your tires and schedule
+                    Proline Wheel & Tire offers a wide selection of tires from trusted brands. Order your tires and schedule
                     installation today!
                 </div>
             </div>

@@ -36,6 +36,22 @@
   <priority>0.80</priority>
 </url>
 <url>
+  <loc>https://mobiletirepro.net/services/oil-changes</loc>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://mobiletirepro.net/services/engine-and-cabin-air-filter-changes</loc>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://mobiletirepro.net/services/wiper-blades</loc>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://mobiletirepro.net/road-hazard-coverage</loc>
+  <priority>0.80</priority>
+</url>
+<url>
   <loc>https://mobiletirepro.net/login</loc>
   <priority>0.80</priority>
 </url>

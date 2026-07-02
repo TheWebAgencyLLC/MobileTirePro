@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
             port: 587,
             secure: false,
             auth: {
-                user: "noreplymobiletirepro@gmail.com",
+                user: "noreplyprolinewheelandtire@gmail.com",
                 pass: config.pass,
             },
         });
@@ -66,14 +66,14 @@ export default defineEventHandler(async (event) => {
             await transporter.sendMail({
                 from: '',
                 to: emailRecipient,
-                subject: "Mobile Tire Pro - Appointment confirmed",
+                subject: "Proline Wheel & Tire - Appointment confirmed",
                 text: `Your appointment has been received, we will be in contact with you shortly \n ${service} \n ${address} \n ${vehicleDisplay} \n ${phone} \n ${format(appointmentDate, 'PPpp')}`,
             });
         }
 
         await transporter.sendMail({
             from: '',
-            to: "mobiletireprollc@gmail.com",
+            to: "prolinewheelandtire@gmail.com",
             subject: "New Appointment",
             text: `You got a new appointment \n ${guestName || ''} \n ${service} \n ${address} \n ${vehicleDisplay} \n ${phone}`,
         });

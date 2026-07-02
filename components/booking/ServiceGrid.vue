@@ -192,7 +192,7 @@
            class="block w-full text-center bg-vivid-red text-white py-2 rounded-lg hover:bg-red-700">
           Call Us
         </a>
-        <a href="mailto:service@example.com"
+        <a href="mailto:prolinewheelandtire@gmail.com"
            class="block w-full text-center border border-vivid-red text-vivid-red py-2 rounded-lg hover:bg-red-50">
           Email Us
         </a>

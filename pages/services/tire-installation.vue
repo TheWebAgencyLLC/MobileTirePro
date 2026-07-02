@@ -112,7 +112,7 @@
                 <div class="grid md:grid-cols-2">
                     <!-- Left side: Image -->
                     <div class="relative h-full min-h-[350px]">
-                        <img src="/images/happyCustomer.jpg" alt="Happy Mobile Tire Pro Customer"
+                        <img src="/images/happyCustomer.jpg" alt="Happy Proline Wheel & Tire Customer"
                             class="absolute inset-0 w-full h-full object-cover object-center" />
                     </div>
                     <!-- Right side: Content -->
@@ -355,7 +355,7 @@
         <!-- Trust Indicators -->
         <div class="bg-gray-100 py-12">
             <div class="max-w-7xl mx-auto px-4">
-                <h2 class="text-3xl font-bold text-center mb-12">Why Choose Mobile Tire Pro</h2>
+                <h2 class="text-3xl font-bold text-center mb-12">Why Choose Proline Wheel & Tire</h2>
                 <div class="grid md:grid-cols-4 gap-8">
                     <div class="bg-white p-6 rounded-lg shadow-md text-center">
                         <div class="rounded-full bg-red-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -411,7 +411,7 @@
                 <h2 class="text-3xl font-bold mb-6">Ready for Professional Tire Installation?</h2>
                 <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
                     Skip the waiting room and let us bring our expertise to your driveway.
-                    Mobile Tire Pro - professional tire installation at your convenience.
+                    Proline Wheel & Tire - professional tire installation at your convenience.
                 </p>
                 <NuxtLink href="/bookings"
                     class="inline-block bg-vivid-red hover:bg-vivid-red/90 text-white text-lg font-medium px-8 py-4 rounded-lg transition-all transform hover:scale-105">

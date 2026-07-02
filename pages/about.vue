@@ -8,7 +8,7 @@
         <h2 class="text-2xl font-bold mb-4">About Us</h2>
         <hr class="w-24 h-1 bg-vivid-red border-0 rounded mt-2"/>
         <p class="text-md mb-8 mt-2">
-          Welcome to Mobile Tire Pro, your trusted mobile tire installation service. <b>With over a decade of industry
+          Welcome to Proline Wheel & Tire, your trusted mobile tire installation service. <b>With over a decade of industry
           experience</b>, we are committed to providing top-notch tire
           services
           that prioritize your safety, deliver exceptional quality, and ensure a superior customer experience.
@@ -16,7 +16,7 @@
         <h2 class="text-2xl font-bold mb-4">Our Mission</h2>
         <hr class="w-24 h-1 bg-vivid-red border-0 rounded mt-2"/>
         <p class="text-md mb-4 mt-2">
-          At Mobile Tire Pro, our mission is to bring convenience and peace of mind to our customers by
+          At Proline Wheel & Tire, our mission is to bring convenience and peace of mind to our customers by
           offering professional sales and tire installation right at their doorstep. We understand the
           importance of safe and reliable tires, and we strive to make the process as seamless and efficient
           as possible.
@@ -58,7 +58,7 @@
           <li class="text-md"><span class="font-bold">Customer-Centric Approach:</span> We listen to your
             needs and provide personalized solutions to keep you safe on the road.
           </li>
-          <p class="text-md underline">Thank you for choosing Mobile Tire Pro. We look forward to serving you
+          <p class="text-md underline">Thank you for choosing Proline Wheel & Tire. We look forward to serving you
             and ensuring your vehicle is equipped with the best tires for a smooth and safe journey.</p>
         </div>
       </div>

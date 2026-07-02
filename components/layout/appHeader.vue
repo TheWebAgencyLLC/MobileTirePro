@@ -11,10 +11,10 @@
       </div>
     </div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16">
+      <div class="flex justify-between h-20">
         <NuxtLink to="/" class="flex items-center">
-          <img src="/images/logos/mtpLogo.png" alt="Mobile Tire Pro Logo"
-            class="w-[15rem] h-auto max-h-14 min-w-[48px] mr-2 object-contain">
+          <img src="/images/logos/ProlineLogo.webp" alt="Proline Wheel & Tire Logo"
+            class="w-[18rem] h-auto max-h-16 min-w-[48px] mr-2 object-contain">
         </NuxtLink>
         <div class="hidden lg:flex items-center space-x-4">
           <NuxtLink @click="trackNavigation(link.label)" v-for="link in filteredDesktopLinks" :key="link.to"
@@ -228,6 +228,7 @@ const clearHideTimer = () => {
 const links: Link[] = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
+  { to: '/road-hazard-coverage', label: 'Road Hazard Coverage' },
   // Services link will be handled by the dropdown
   { to: '/fleet-services', label: 'Fleet Services' }
 ];
@@ -237,7 +238,10 @@ const serviceLinks: Link[] = [
   { to: '/services/tire-installation', label: 'Professional Sales & Tire Installation' },
   { to: '/services', label: 'Tire Repair' },
   { to: '/services', label: 'TPMS Sensor Recalibration' },
-  { to: '/services/electric-vehicle-services', label: 'EV Servicing' }
+  { to: '/services/electric-vehicle-services', label: 'EV Servicing' },
+  { to: '/services/oil-changes', label: 'Oil Changes' },
+  { to: '/services/engine-and-cabin-air-filter-changes', label: 'Engine & Cabin Air Filter Changes' },
+  { to: '/services/wiper-blades', label: 'Wiper Blades' }
   // Add more service pages as needed
 ];
 

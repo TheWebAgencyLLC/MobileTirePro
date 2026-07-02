@@ -6,8 +6,8 @@
         <!-- Brand Section -->
         <div class="space-y-4">
           <div class="flex items-center space-x-3">
-            <img src="/public/images/logos/mtpLogo.png" 
-                class="w-40 h-auto max-h-10 sm:w-44 sm:max-h-11 md:w-48 md:max-h-12 object-contain" 
+            <img src="/public/images/logos/ProlineLogo.webp" 
+                class="w-52 h-auto max-h-14 sm:w-60 sm:max-h-16 md:w-64 md:max-h-20 object-contain" 
                 alt="Mobile Tire Pro Logo">
           </div>
           <p class="text-gray-600 dark:text-gray-300">
@@ -24,7 +24,7 @@
             </svg>
             <h3 class="font-semibold text-gray-900 dark:text-white">Services</h3>
           </div>
-          <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+          <ul class="grid grid-cols-2 gap-x-4 gap-y-2 text-gray-600 dark:text-gray-300">
             <li>
               <NuxtLink to="/services/tire-installation"
                 class="hover:text-red-600 dark:hover:text-red-400 transition-colors">Tire Installaton</NuxtLink>
@@ -44,6 +44,18 @@
             <li>
               <NuxtLink to="/services" class="hover:text-red-600 dark:hover:text-red-400 transition-colors">TPMS
                 Recalibration</NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/services/oil-changes"
+                class="hover:text-red-600 dark:hover:text-red-400 transition-colors">Oil Changes</NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/services/engine-cabin-air-filter-changes"
+                class="hover:text-red-600 dark:hover:text-red-400 transition-colors">Engine &amp; Cabin Air Filters</NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/services/wiper-blades"
+                class="hover:text-red-600 dark:hover:text-red-400 transition-colors">Wiper Blades</NuxtLink>
             </li>
           </ul>
         </div>
@@ -92,9 +104,9 @@
               </a>
             </li>
             <li>
-              <a href="mailto:mobiletireprollc@gmail.com"
+              <a href="mailto:prolinewheelandtire@gmail.com"
                 class="text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                mobiletireprollc@gmail.com
+                prolinewheelandtire@gmail.com
               </a>
             </li>
           </ul>
