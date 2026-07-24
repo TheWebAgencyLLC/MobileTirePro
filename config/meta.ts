@@ -17,6 +17,10 @@ export const metaConfig = {
       {
         name: "keywords",
         content: "Mobile tire installation,On-site tire service,Wheel and tire,TPMS service,At-home tire installation,EV tire service,Proline Wheel and Tire,Mobile tire service Chicagoland"
+      },
+      {
+        name: "google-site-verification",
+        content: "UwNalKyI61RDCZ59ntTfla1980vsAzOLiMJ87hh9nS0"
       }
     ]
 }
