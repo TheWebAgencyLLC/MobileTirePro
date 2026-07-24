@@ -17,12 +17,12 @@ export const socialLinks: SocialLink[] = [
   },
   {
     name: 'YouTube',
-    href: 'https://www.youtube.com/@ProlineWheelAndTire',
+    href: 'https://www.youtube.com/@mobiletirepro',
     icon: 'youtube',
   },
   {
     name: 'TikTok',
-    href: 'https://www.tiktok.com/@prolinewheelandtire',
+    href: 'https://www.tiktok.com/@mobiletirepro',
     icon: 'tiktok',
   },
 ]

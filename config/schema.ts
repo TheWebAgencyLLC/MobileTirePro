@@ -15,8 +15,8 @@ export const schemaConfig = {
             "sameAs": [
               "https://www.facebook.com/profile.php?id=61560018959670",
               "https://www.instagram.com/prolinewheelandtire",
-              "https://www.youtube.com/@ProlineWheelAndTire",
-              "https://www.tiktok.com/@prolinewheelandtire"
+              "https://www.youtube.com/@mobiletirepro",
+              "https://www.tiktok.com/@mobiletirepro"
             ]
         })
         }
