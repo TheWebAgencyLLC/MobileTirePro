@@ -23,9 +23,10 @@ Complete these steps **after** the site is deployed with the new domain and 301 
 
 ## 4. Netlify domain settings
 
-- [ ] Add `prolinewheelandtire.com` to the Netlify site
-- [ ] Set **primary domain** to `www.prolinewheelandtire.com`
-- [ ] Keep `mobiletirepro.net` attached (redirect rules are in `public/_redirects`)
+- [ ] Add `prolinewheelandtire.com` and `www.prolinewheelandtire.com` to the Netlify site
+- [ ] Set **primary domain** to `www.prolinewheelandtire.com` (critical — if primary is the apex, you get `ERR_TOO_MANY_REDIRECTS`)
+- [ ] Do **not** add apex→www rules in `_redirects`; Netlify handles that when primary is www
+- [ ] Keep `mobiletirepro.net` attached (legacy redirects are in `public/_redirects`)
 - [ ] Confirm HTTPS/SSL is active on both domains
 
 ## 5. Analytics (GTM)

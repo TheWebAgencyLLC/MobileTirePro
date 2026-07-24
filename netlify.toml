@@ -1,7 +1,8 @@
 # Domain setup (Netlify UI → Domain management):
-# 1. Add prolinewheelandtire.com and set www.prolinewheelandtire.com as primary
-# 2. Keep mobiletirepro.net attached to this site (redirect rules live in public/_redirects)
-# 3. Point DNS at your registrar per Netlify's instructions for both domains
+# 1. Add prolinewheelandtire.com and www.prolinewheelandtire.com
+# 2. Set PRIMARY domain to www.prolinewheelandtire.com (not the apex — wrong primary causes redirect loops)
+# 3. Netlify will auto-redirect prolinewheelandtire.com → www; do not duplicate that in public/_redirects
+# 4. Keep mobiletirepro.net attached to this site (legacy redirects live in public/_redirects)
 
 [[headers]]
   for = "/*"
