@@ -14,7 +14,7 @@
                 <p class="text-xl text-white max-w-3xl mx-auto mb-8">
                     Premium oil and filter changes delivered to your driveway, garage, or workplace
                 </p>
-                <NuxtLink to="/bookings"
+                <NuxtLink to="/bookings?service=oilchange"
                     class="bg-vivid-red hover:bg-vivid-red/90 text-white text-lg font-medium rounded-lg transition-all transform hover:scale-105 block w-[220px] py-4">
                     <span class="inline-block px-6">Book Service &#8594;</span>
                 </NuxtLink>
@@ -93,7 +93,7 @@
                 <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
                     Skip the waiting room. Proline Wheel & Tire brings professional oil change service to your location.
                 </p>
-                <NuxtLink to="/bookings"
+                <NuxtLink to="/bookings?service=oilchange"
                     class="inline-block bg-vivid-red hover:bg-vivid-red/90 text-white text-lg font-medium px-8 py-4 rounded-lg transition-all transform hover:scale-105">
                     Schedule Now
                 </NuxtLink>

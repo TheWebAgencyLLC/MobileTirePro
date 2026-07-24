@@ -24,6 +24,7 @@ function formatAppointmentDetails({
     tireDisposalFee,
     serviceFee,
     totalPrice,
+    requiresQuote,
 }: {
     service: string
     tireCount?: number
@@ -38,6 +39,7 @@ function formatAppointmentDetails({
     tireDisposalFee?: number
     serviceFee?: number
     totalPrice?: number
+    requiresQuote?: boolean
 }) {
     const lines = [
         guestName ? `Customer: ${guestName}` : null,
@@ -50,11 +52,15 @@ function formatAppointmentDetails({
         appointmentDate ? `Appointment: ${format(new Date(appointmentDate), 'PPpp')}` : null,
         '',
         'Pricing:',
-        basePrice != null ? `  Service: ${formatCurrency(basePrice)}` : null,
-        shopSuppliesFee ? `  Shop supplies: ${formatCurrency(shopSuppliesFee)}` : null,
-        tireDisposalFee ? `  Tire disposal: ${formatCurrency(tireDisposalFee)}` : null,
-        serviceFee != null ? `  Mobile service fee: ${formatCurrency(serviceFee)}` : null,
-        totalPrice != null ? `  Total paid: ${formatCurrency(totalPrice)}` : null,
+        requiresQuote
+            ? '  Service price: To be quoted — we will contact you with any additional vehicle details needed for an accurate price.'
+            : basePrice != null ? `  Service: ${formatCurrency(basePrice)}` : null,
+        requiresQuote ? null : shopSuppliesFee ? `  Shop supplies: ${formatCurrency(shopSuppliesFee)}` : null,
+        requiresQuote ? null : tireDisposalFee ? `  Tire disposal: ${formatCurrency(tireDisposalFee)}` : null,
+        requiresQuote ? null : serviceFee != null ? `  Mobile service fee: ${formatCurrency(serviceFee)}` : null,
+        requiresQuote
+            ? '  Total: Quote pending (no online payment collected)'
+            : totalPrice != null ? `  Total paid: ${formatCurrency(totalPrice)}` : null,
     ]
 
     return lines.filter(Boolean).join('\n')
@@ -90,6 +96,7 @@ export default defineEventHandler(async (event) => {
             tireDisposalFee,
             serviceFee,
             totalPrice,
+            requiresQuote,
         } = await readBody(event);
 
         const sessionEmail = await getAuth(event)
@@ -141,6 +148,7 @@ export default defineEventHandler(async (event) => {
             tireDisposalFee,
             serviceFee,
             totalPrice,
+            requiresQuote,
         })
 
         if (emailRecipient) {

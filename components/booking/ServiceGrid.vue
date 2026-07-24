@@ -11,7 +11,7 @@
           <div>
             <h3 class="text-lg font-semibold dark:text-white">{{ service.name }}</h3>
             <span class="text-vivid-red font-bold my-1 block">
-              {{ service.name.includes('Tire Installation') ? 'Starting at $' + getPrice(service) : '$' + getPrice(service) }}
+              {{ service.name.includes('Tire Installation') ? 'Starting at $' + getDisplayPrice(service) : '$' + getDisplayPrice(service) }}
             </span>
             <p class="text-sm text-gray-600 dark:text-gray-300">{{ service.description }}</p>
           </div>
@@ -24,8 +24,8 @@
       <div v-if="expandedService?._id === service._id"
            class="px-4 pb-4 space-y-4 border-t dark:border-gray-700" @click.stop>
 
-        <!-- Rim Size (per-tire priced services: Installation, Repair) -->
-        <div v-if="isPricedPerTire(service)" class="space-y-2 pt-4">
+        <!-- Rim Size (installation only — price varies by rim size) -->
+        <div v-if="isInstallation(service)" class="space-y-2 pt-4">
           <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold">
             Rim Size
             <button @mouseenter="showRimTip = true" @mouseleave="showRimTip = false"
@@ -59,19 +59,23 @@
         <div v-if="tireCount" class="text-sm text-gray-600 dark:text-gray-400 space-y-0.5">
           <div>Base price:
             <span class="font-semibold text-vivid-red">
-              <template v-if="isPricedPerTire(service) && rimSize">${{ (rimSize <= 18 ? 25 : 30) * tireCount }}</template>
-              <template v-else-if="!isPricedPerTire(service)">${{ getPrice(service) }}</template>
+              <template v-if="isInstallation(service) && rimSize">${{ installationBasePrice(rimSize, tireCount) }}</template>
+              <template v-else-if="isRepair(service)">${{ SERVICE_PRICING.repairFlat }}</template>
+              <template v-else>${{ getDisplayPrice(service) }}</template>
             </span>
           </div>
-          <template v-if="service.name.toLowerCase().includes('installation') && rimSize && tireCount">
-            <div>Shop supplies: <span class="font-semibold">${{ (3.5 * tireCount).toFixed(2) }}</span></div>
-            <div>Tire disposal: <span class="font-semibold">${{ (4 * tireCount).toFixed(2) }}</span></div>
+          <template v-if="isInstallation(service) && rimSize && tireCount">
+            <div>Shop supplies: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
+            <div>Tire disposal: <span class="font-semibold">${{ tireDisposalFee(tireCount).toFixed(2) }}</span></div>
+          </template>
+          <template v-else-if="isRepair(service) && tireCount">
+            <div>Shop supplies: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
           </template>
           <div><span class="italic">+ service fee (added at checkout)</span></div>
         </div>
 
         <button @click="confirmServiceWithConfig(service)"
-                :disabled="isPricedPerTire(service) ? (!rimSize || !tireCount) : !tireCount"
+                :disabled="isInstallation(service) ? (!rimSize || !tireCount) : !tireCount"
                 class="w-full bg-vivid-red text-white py-3 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Continue to Scheduling
         </button>
@@ -117,9 +121,9 @@
             <div class="flex justify-between items-start">
               <div>
                 <h4 class="font-semibold dark:text-white">Tires Only</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Tire swap on existing wheels — $25–30/tire</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Tire swap on existing wheels — $28–33/tire</p>
               </div>
-              <span class="text-vivid-red font-bold">From $150</span>
+              <span class="text-vivid-red font-bold">From $112</span>
             </div>
           </div>
         </div>
@@ -178,6 +182,35 @@
       <p class="text-sm text-gray-600 dark:text-gray-300">Tire Pressure Monitoring System service</p>
       <div class="mt-3 text-sm text-gray-500">Please contact us for specific pricing</div>
     </div>
+
+    <!-- Oil Change -->
+    <div class="border rounded-lg transition-all dark:bg-gray-800"
+         :class="expandedService?.name === 'Oil Change' ? 'border-vivid-red shadow-md' : 'border-gray-200'">
+
+      <div @click="toggleOilChange" class="p-4 cursor-pointer">
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-lg font-semibold dark:text-white">Oil Change</h3>
+            <span class="text-vivid-red font-bold block my-1">Custom Quote</span>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Mobile oil change at your location</p>
+          </div>
+          <span v-if="expandedService?.name === 'Oil Change'" class="text-vivid-red text-lg ml-2">▲</span>
+          <span v-else class="text-gray-400 text-lg ml-2">▼</span>
+        </div>
+      </div>
+
+      <div v-if="expandedService?.name === 'Oil Change'"
+           class="px-4 pb-4 space-y-4 border-t dark:border-gray-700" @click.stop>
+        <p class="text-sm text-gray-600 dark:text-gray-400 pt-4 leading-relaxed">
+          Oil change pricing varies by vehicle. We may reach out for additional details about your car
+          to provide an accurate quote before your appointment.
+        </p>
+        <button @click="confirmOilChange"
+                class="w-full bg-vivid-red text-white py-3 rounded-lg hover:bg-red-700 transition-colors">
+          Continue to Scheduling
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- TPMS Modal -->
@@ -207,6 +240,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import {
+  SERVICE_PRICING,
+  getServiceDisplayPrice,
+  installationBasePrice,
+  shopSuppliesFee,
+  tireDisposalFee,
+} from '~/config/service-pricing'
 
 const { data: FETCHED_SERVICES } = await useFetch('/api/services/list', {
   method: 'GET',
@@ -221,6 +261,13 @@ const SEASONAL_CHANGEOVER = {
   Price: 125,
   price: 125,
   tireCount: 4,
+  isActive: true
+}
+
+const OIL_CHANGE = {
+  name: 'Oil Change',
+  description: 'Mobile oil change at your location',
+  price: 0,
   isActive: true
 }
 
@@ -239,25 +286,31 @@ const rimSizes = Array.from({ length: 11 }, (_, i) => i + 12) // 12–22 inches
 // Handle both DB field name variants (Price/price, tireCount/maxTireCount)
 const getPrice = (service: any): number => service.Price ?? service.price ?? 0
 const getTireCount = (service: any): number => service.tireCount ?? service.maxTireCount ?? 0
+const getDisplayPrice = (service: any): number => getServiceDisplayPrice(service.name, getPrice(service))
 
-// Installation and Repair: price varies by rim size × tire count
-// Everything else (Rotation & Balance, etc.): flat fee
-const isPricedPerTire = (service: any): boolean =>
-  service.name.toLowerCase().includes('installation') ||
+const isInstallation = (service: any): boolean =>
+  service.name.toLowerCase().includes('installation')
+const isRepair = (service: any): boolean =>
   service.name.toLowerCase().includes('repair')
+const isRotation = (service: any): boolean =>
+  service.name.toLowerCase().includes('rotation')
 
 const handleServiceClick = (service: any) => {
   // tireCount <= 1 means no configuration needed — emit immediately
   if (getTireCount(service) <= 1) {
-    const isRepair = service.name.toLowerCase().includes('repair')
-    const isRotation = service.name.toLowerCase().includes('rotation')
-    const shopSuppliesFee = isRepair ? 3.50 : isRotation ? 14 : 0
+    const count = getTireCount(service) || 1
+    const supplies = isRepair(service) ? shopSuppliesFee(count) : 0
+    const price = isRepair(service)
+      ? SERVICE_PRICING.repairFlat
+      : isRotation(service)
+        ? SERVICE_PRICING.rotationFlat
+        : getDisplayPrice(service)
     emit('service-selected', {
       service,
       rimSize: null,
-      tireCount: getTireCount(service) || 1,
-      price: getPrice(service),
-      shopSuppliesFee,
+      tireCount: count,
+      price,
+      shopSuppliesFee: supplies,
       tireDisposalFee: 0
     })
     return
@@ -273,19 +326,29 @@ const handleServiceClick = (service: any) => {
 }
 
 const confirmServiceWithConfig = (service: any) => {
-  const isInstallation = service.name.toLowerCase().includes('installation')
-  const basePrice = isPricedPerTire(service)
-    ? ((rimSize.value || 0) <= 18 ? 25 : 30) * (tireCount.value || 0)
-    : getPrice(service)
-  const shopSuppliesFee = isInstallation ? 3.50 * (tireCount.value || 0) : 0
-  const tireDisposalFee = isInstallation ? 4 * (tireCount.value || 0) : 0
+  const count = tireCount.value || 0
+  let basePrice: number
+  let supplies = 0
+  let disposal = 0
+
+  if (isInstallation(service)) {
+    basePrice = installationBasePrice(rimSize.value || 0, count)
+    supplies = shopSuppliesFee(count)
+    disposal = tireDisposalFee(count)
+  } else if (isRepair(service)) {
+    basePrice = SERVICE_PRICING.repairFlat
+    supplies = shopSuppliesFee(count)
+  } else {
+    basePrice = isRotation(service) ? SERVICE_PRICING.rotationFlat : getDisplayPrice(service)
+  }
+
   emit('service-selected', {
     service,
-    rimSize: isPricedPerTire(service) ? rimSize.value : null,
+    rimSize: isInstallation(service) ? rimSize.value : null,
     tireCount: tireCount.value,
     price: basePrice,
-    shopSuppliesFee,
-    tireDisposalFee
+    shopSuppliesFee: supplies,
+    tireDisposalFee: disposal
   })
 }
 
@@ -309,8 +372,8 @@ const confirmChangeover = () => {
     price = 125 + (includeStorage.value ? 49.95 : 0)
     serviceName = 'Seasonal Changeover (Assembly)'
   } else {
-    const pricePerTire = (rimSize.value || 0) <= 18 ? 25 : 30
-    price = pricePerTire * (tireCount.value || 0) + (includeStorage.value ? 49.95 : 0)
+    price = installationBasePrice(rimSize.value || 0, tireCount.value || 0)
+      + (includeStorage.value ? 49.95 : 0)
     serviceName = 'Seasonal Changeover (Tires Only)'
   }
 
@@ -328,6 +391,26 @@ const handleTPMSClick = () => {
   showTPMSModal.value = true
 }
 
+const toggleOilChange = () => {
+  if (expandedService.value?.name === 'Oil Change') {
+    expandedService.value = null
+  } else {
+    expandedService.value = OIL_CHANGE
+  }
+}
+
+const confirmOilChange = () => {
+  emit('service-selected', {
+    service: OIL_CHANGE,
+    rimSize: null,
+    tireCount: null,
+    price: 0,
+    shopSuppliesFee: 0,
+    tireDisposalFee: 0,
+    requiresQuote: true,
+  })
+}
+
 onMounted(() => {
   if (route.query?.service?.includes('seasonalchangeover')) {
     expandedService.value = SEASONAL_CHANGEOVER
@@ -339,6 +422,9 @@ onMounted(() => {
   if (route.query?.service?.includes('installation')) {
     const target = FETCHED_SERVICES?.value?.find((s: any) => s.name.includes('Tire Installation'))
     if (target) expandedService.value = target
+  }
+  if (route.query?.service?.includes('oilchange')) {
+    expandedService.value = OIL_CHANGE
   }
 })
 </script>

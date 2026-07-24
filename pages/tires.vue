@@ -17,35 +17,14 @@
         </div>
 
         <div class="max-w-4xl mx-auto px-4 py-12">
-            <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-vivid-red mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                </div>
-
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Under Construction</h2>
-                <p class="text-lg text-gray-600 mb-2">
-                    Our online tire catalog is coming soon.
+            <div class="bg-white rounded-lg shadow-lg p-8 md:p-12">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Find Your Tires</h2>
+                <p class="text-gray-600 mb-8 text-center">
+                    Search by vehicle or tire size below. Need help? Call us at
+                    <a href="tel:815-355-1437" @click="$gtm.trackPhoneClick('tires_page')"
+                        class="text-vivid-red hover:underline">(815) 355-1437</a>.
                 </p>
-                <p class="text-gray-600 mb-8">
-                    Please contact us for pricing and availability. We carry tires from the brands below
-                    and can help you find the right fit for your vehicle.
-                </p>
-
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="tel:815-355-1437"
-                        @click="$gtm.trackPhoneClick('tires_page')"
-                        class="inline-flex items-center justify-center bg-vivid-red text-white font-medium px-6 py-3 rounded-lg hover:bg-crimson-red transition-colors">
-                        Call (815) 355-1437
-                    </a>
-                    <a href="mailto:prolinewheelandtire@gmail.com"
-                        class="inline-flex items-center justify-center border border-vivid-red text-vivid-red font-medium px-6 py-3 rounded-lg hover:bg-red-50 transition-colors">
-                        Email Us
-                    </a>
-                </div>
+                <TireConnectWidget container-id="tireconnect-tires" :lazy="false" />
             </div>
 
             <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 mt-8">
@@ -132,11 +111,11 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'Premium tires from Michelin, Goodyear, Bridgestone, and more. Contact Proline Wheel & Tire for pricing and availability.'
+      content: 'Shop premium tires from Michelin, Goodyear, Bridgestone, and more. Search by vehicle or tire size with Proline Wheel & Tire.'
     },
     { name: 'keywords', content: 'order tires online, mobile tire installation, tire brands, tire replacement service' },
     { property: 'og:title', content: 'Order Tires | Proline Wheel & Tire' },
-    { property: 'og:description', content: 'Contact us for tire pricing and availability from trusted brands.' },
+    { property: 'og:description', content: 'Search by vehicle or tire size and order tires for mobile installation.' },
     { property: 'og:type', content: 'website' }
   ]
 })

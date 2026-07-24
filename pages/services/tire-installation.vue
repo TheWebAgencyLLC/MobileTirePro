@@ -284,8 +284,19 @@
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">Complete Tire Installation</h3>
                             <div class="flex justify-center items-baseline my-6">
                                 <span class="text-gray-600 text-lg mr-1">Starting at</span>
-                                <span class="text-5xl font-extrabold text-gray-900 mx-2">$150</span>
-                                <span class="text-gray-500">per set of 4</span>
+                                <span class="text-5xl font-extrabold text-gray-900 mx-2">${{ installStartingFour }}</span>
+                                <span class="text-gray-500">per set of 4 (18" and under)</span>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-lg p-4 mb-8 text-left text-sm text-gray-700 space-y-2">
+                                <p class="font-semibold text-gray-900">Service fee breakdown</p>
+                                <ul class="space-y-1">
+                                    <li>{{ SERVICE_PRICING.rimSizeThreshold }}" and under: ${{ SERVICE_PRICING.installPerTireUpTo18 }} per tire</li>
+                                    <li>19" and over: ${{ SERVICE_PRICING.installPerTire19Plus }} per tire</li>
+                                    <li>Tire disposal: ${{ SERVICE_PRICING.tireDisposalPerTire }} per tire</li>
+                                    <li>Shop supplies (wheel weights, valve stems): ${{ SERVICE_PRICING.shopSuppliesPerTire }} per tire</li>
+                                </ul>
+                                <p class="text-gray-500 pt-1">Example: 4 tires on 18" wheels — ${{ installStartingFour }} install + ${{ shopSuppliesFour }} supplies + ${{ disposalFour }} disposal = ${{ exampleTotalFour }} before service fee.</p>
                             </div>
 
                             <ul class="text-left space-y-4 mb-8">
@@ -423,6 +434,13 @@
 </template>
 
 <script setup>
+import { SERVICE_PRICING } from '~/config/service-pricing'
+
+const installStartingFour = SERVICE_PRICING.installPerTireUpTo18 * 4
+const shopSuppliesFour = SERVICE_PRICING.shopSuppliesPerTire * 4
+const disposalFour = SERVICE_PRICING.tireDisposalPerTire * 4
+const exampleTotalFour = installStartingFour + shopSuppliesFour + disposalFour
+
 useHead({
     title: 'Mobile Tire Installation Service | Professional Tire Mounting',
     meta: [

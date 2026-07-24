@@ -53,7 +53,7 @@ const services: Service[] = [
     description: `Our mobile oil change service provides convenient, professional oil changes at your location. Using premium quality oils and filters, we'll help maintain your engine's performance and longevity without you having to visit a shop.`,
     icon: '/images/icons/oil-can.svg',
     ctaText: 'Schedule Oil Change',
-    link: '/services/oil-changes'
+    link: '/bookings?service=oilchange'
   }
 ]
 </script>
