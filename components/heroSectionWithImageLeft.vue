@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CarSelectorForm from './carSelectorForm.vue'
 import ServiceCard from './servicesCard.vue'
 
 const $gtm = useGTM()
@@ -30,7 +29,7 @@ const services: Service[] = [
     link: '/bookings?service=installation'
   }, {
     title: 'Professional Tire Repair',
-    description: 'At Mobile Tire Pro, we specialize in safe and reliable tire repairs to get you back on the road with peace of mind. We use high quality materials and a precise process to ensure that your tire is repaired to the highest safety standards. Please note that we do not offer roadside assistance; for tire repairs your vehicle must be in a safe location such as a driveway, garage, or public parking lot.',
+    description: 'At Proline Wheel & Tire, we specialize in safe and reliable tire repairs to get you back on the road with peace of mind. We use high quality materials and a precise process to ensure that your tire is repaired to the highest safety standards. Please note that we do not offer roadside assistance; for tire repairs your vehicle must be in a safe location such as a driveway, garage, or public parking lot.',
     icon: '/images/icons/tireIcon.svg',
     ctaText: 'Schedule Repair',
     link: '/bookings?service=tirerepair'
@@ -50,37 +49,40 @@ const services: Service[] = [
     link: '/bookings?service=seasonalchangeover'
   },
   {
-    title: 'Oil Changes Coming Soon!',
-    description: `Our mobile oil change service will provide convenient, professional oil changes at your location. Using premium quality oils and filters, we'll help maintain your engine's performance and longevity without you having to visit a shop. Stay tuned for this upcoming service!`,
+    title: 'Oil Changes',
+    description: `Our mobile oil change service provides convenient, professional oil changes at your location. Using premium quality oils and filters, we'll help maintain your engine's performance and longevity without you having to visit a shop.`,
     icon: '/images/icons/oil-can.svg',
-    ctaText: '',
-    link: '',
-    comingSoon: true
+    ctaText: 'Schedule Oil Change',
+    link: '/bookings?service=oilchange'
   }
 ]
 </script>
 
 <template>
-  <div class="relative dark:bg-deep-charcoal overflow-hidden bg-gray-100 min-h-[70vh] lg:min-h-0 hero-bg">
+  <div class="relative dark:bg-deep-charcoal overflow-hidden bg-gray-100 hero-bg">
     <div class="absolute inset-0 bg-black opacity-50 lg:hidden"></div>
-    <div class="container mx-auto px-4 py-8 h-full relative z-10">
-      <div class="flex flex-col lg:flex-row items-center justify-center lg:justify-between h-full">
-        <div class="hidden lg:block lg:w-7/12">
+    <div class="container mx-auto px-4 py-12 lg:py-16 relative z-10">
+      <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+        <div class="hidden lg:block lg:w-1/2">
           <img
             src="/images/isometric-car-repair-horizontal-banner-with-serviceman-making-tire-service-vector-illustration.webp"
-            alt="Tire Service Technician Illustration" class="w-full h-auto">
+            alt="Tire Service Technician Illustration"
+            class="w-full h-auto">
         </div>
-        <div
-          class="w-full lg:w-7/12 text-center lg:text-left lg:pl-8 p-6 lg:p-0 bg-black bg-opacity-30 lg:bg-transparent rounded-lg lg:absolute lg:right-0 lg:top-1/2 lg:transform lg:-translate-y-1/2">
+        <div class="w-full lg:w-1/2 text-center lg:text-left p-6 lg:p-0 bg-black bg-opacity-30 lg:bg-transparent rounded-lg">
           <h1
-            class="text-3xl dark:text-white lg:text-5xl font-bold text-white mb-4 text-shadow lg:text-gray-800 lg:text-shadow-none">
+            class="text-3xl lg:text-5xl font-bold text-white lg:text-gray-800 dark:lg:text-white mb-4 text-shadow lg:text-shadow-none">
             Expert Tire Care, Wherever You Are
           </h1>
           <p
-            class="text-lg dark:text-white lg:text-xl text-gray-100 lg:text-gray-600 mb-6 text-shadow lg:text-shadow-none">
+            class="text-lg lg:text-xl text-gray-100 lg:text-gray-600 dark:lg:text-gray-300 mb-8 text-shadow lg:text-shadow-none">
             Professional tire services delivered to your driveway, garage, or public parking lot
           </p>
-          <CarSelectorForm />
+          <NuxtLink
+            to="/bookings"
+            class="inline-block bg-vivid-red text-white font-bold py-3 px-8 rounded-md hover:bg-crimson-red transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-vivid-red focus:ring-offset-2">
+            Book a Service
+          </NuxtLink>
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { SITE } from './site'
+
 export const schemaConfig = {
     script: [
         {
@@ -5,10 +7,17 @@ export const schemaConfig = {
         innerHTML: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "Mobile Tire Pro",
-            "url": "https://www.mobiletirepro.net",
-            "logo": "https://www.mobiletirepro.net/images/logos/MTP_PNG.png",
-            "sameAs": [ "https://www.facebook.com/profile.php?id=61560018959670" ]
+            "name": SITE.name,
+            "url": SITE.url,
+            "logo": SITE.logo,
+            "email": SITE.email,
+            "telephone": SITE.phone,
+            "sameAs": [
+              "https://www.facebook.com/profile.php?id=61560018959670",
+              "https://www.instagram.com/prolinewheelandtire",
+              "https://www.youtube.com/@mobiletirepro",
+              "https://www.tiktok.com/@mobiletirepro"
+            ]
         })
         }
     ]

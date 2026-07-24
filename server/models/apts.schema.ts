@@ -47,6 +47,21 @@ export const aptsSchema = defineMongooseModel({
         },
         vehicleInfo: {
             type: 'string',
+        },
+        basePrice: {
+            type: 'number',
+        },
+        shopSuppliesFee: {
+            type: 'number',
+        },
+        tireDisposalFee: {
+            type: 'number',
+        },
+        serviceFee: {
+            type: 'number',
+        },
+        totalPrice: {
+            type: 'number',
         }
     }
 });

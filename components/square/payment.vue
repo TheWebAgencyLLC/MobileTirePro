@@ -1,15 +1,32 @@
 <script setup lang="ts">
-onMounted(async () => {
-  loading.value = true;
-  await initializePaymentForm();
-  await initializeGooglePay()
-  loading.value = false;
-
-});
-
-const {price} = defineProps(['price'])
+const { price } = defineProps(['price'])
 
 const emit = defineEmits(['payment'])
+
+const $gtm = useGTM()
+
+const loadSquareScript = () =>
+  new Promise<void>((resolve, reject) => {
+    if (typeof Square !== 'undefined') {
+      resolve()
+      return
+    }
+
+    const existing = document.querySelector('script[data-square-sdk]')
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('Square.js failed to load')), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://web.squarecdn.com/v1/square.js'
+    script.async = true
+    script.dataset.squareSdk = 'true'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Square.js failed to load'))
+    document.head.appendChild(script)
+  })
 
 const resetProcessing = () => {
   isProcessing.value = false;
@@ -29,7 +46,19 @@ let loading = ref(false);
 
 const isProcessing = ref(false)
 
-console.log(price)
+onMounted(async () => {
+  loading.value = true;
+  try {
+    await loadSquareScript()
+    await initializePaymentForm();
+    await initializeGooglePay()
+  } catch (error) {
+    console.error(error)
+    paymentStatus.value = 'Payment form failed to load'
+  } finally {
+    loading.value = false;
+  }
+});
 
 
 function buildPaymentRequest(payments) {
@@ -116,6 +145,7 @@ const handlePaymentMethodSubmission = async () => {
   });
   if (!error.value) {
     paymentStatus.value = "Payment completed, creating appointment...";
+    $gtm.trackPaymentSuccess({ amount: price, method: 'card' })
     emit('payment')
     // Keep isProcessing true - parent component will handle completion
   } else {
@@ -146,6 +176,7 @@ const handleGooglePaySubmission = async (googlePay) => {
     });
     if (!error.value) {
       paymentStatus.value = "Payment completed, creating appointment...";
+      $gtm.trackPaymentSuccess({ amount: price, method: 'google_pay' })
       emit('payment')
       // Keep isProcessing true - parent component will handle completion
     } else {

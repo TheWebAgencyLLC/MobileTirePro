@@ -1,5 +1,20 @@
 <script setup>
-import GoogleReviewsWidget from '@/components/googleReviewsWidget.vue'  
+import GoogleReviewsWidget from '@/components/googleReviewsWidget.vue'
+import { SITE } from '~/config/site'
+
+const ImageCarousel = defineAsyncComponent(() => import('@/components/imageCarousel.vue'))
+const LeafletComponent = defineAsyncComponent(() => import('@/components/leafletComponent.vue'))
+
+useHead({
+  title: `Mobile Tire & Wheel Service in Chicagoland | ${SITE.name}`,
+  meta: [
+    {
+      name: 'description',
+      content: `${SITE.name} brings expert mobile tire installation and wheel services to your driveway. Book online for sedans, SUVs, trucks, and EVs across Chicagoland.`
+    }
+  ],
+  link: [{ rel: 'canonical', href: `${SITE.url}/` }]
+})
 </script>
 
 <script>
@@ -10,42 +25,42 @@ export default {
       carImages: [
       {
           id: 1,
-          src: '/images/genesis.jpeg',
+          src: '/images/carousel/genesis.jpg',
           alt: 'Hyundai Genesis SUV'
         },
         {
           id: 2,
-          src: '/images/gtr.webp',
+          src: '/images/carousel/gtr.jpg',
           alt: 'Nissan GTR'
         },
         {
           id: 3,
-          src: '/images/trailer.webp',
+          src: '/images/carousel/trailer.jpg',
           alt: 'Trailer'
         },
         {
           id: 4,
-          src: '/images/rivianEV.webp',
+          src: '/images/carousel/rivianEV.jpg',
           alt: 'Rivian Truck'
         },
         {
           id: 5,
-          src: '/images/jeep.webp',
+          src: '/images/carousel/jeep.jpg',
           alt: 'Jeep'
         },
         {
           id: 6,
-          src: '/images/tesla.webp',
+          src: '/images/carousel/tesla.jpg',
           alt: 'Tesla'
         },
         {
           id: 7,
-          src: '/images/classicCar.webp',
+          src: '/images/carousel/classicCar.jpg',
           alt: 'Classic Car'
         },
         {
           id: 8,
-          src: '/images/hyundai.webp',
+          src: '/images/carousel/hyundai.jpg',
           alt: 'Hyundai'
         },
       ]
@@ -65,23 +80,25 @@ export default {
     <h4 class="text-xl m-2 dark:text-white">Customer Testimonials & Car Showcase</h4>
   </div>
   <div class="p-4 xl:mb-8 mb-4">
-    <ImageCarousel :images="carImages" />
+    <LazyWhenVisible>
+      <ImageCarousel :images="carImages" />
+    </LazyWhenVisible>
   </div>
 
-  <div class="xl:px-0 px-4 mb-8">
-    <GoogleReviewsWidget />
-  </div>
+  <LazyWhenVisible class="xl:px-0 px-4 mb-8">
+    <ClientOnly>
+      <GoogleReviewsWidget />
+    </ClientOnly>
+  </LazyWhenVisible>
 
-  <LeafletComponent />
+  <LazyWhenVisible>
+    <LeafletComponent />
+  </LazyWhenVisible>
 </template>
 
 <style>
 body {
   background-color: #FAFAFA;
   font-family: 'Lato', sans-serif;
-}
-
-.dark body {
-  background-color: #1e1f26;
 }
 </style>

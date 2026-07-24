@@ -1,0 +1,9 @@
+# Apex → www on new domain
+https://prolinewheelandtire.com/*    https://www.prolinewheelandtire.com/:splat    301!
+http://prolinewheelandtire.com/*     https://www.prolinewheelandtire.com/:splat    301!
+
+# Legacy domain → new domain (preserve paths for SEO)
+https://mobiletirepro.net/*          https://www.prolinewheelandtire.com/:splat    301!
+https://www.mobiletirepro.net/*      https://www.prolinewheelandtire.com/:splat    301!
+http://mobiletirepro.net/*           https://www.prolinewheelandtire.com/:splat    301!
+http://www.mobiletirepro.net/*       https://www.prolinewheelandtire.com/:splat    301!

@@ -247,7 +247,7 @@
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">Tire Swap Service</h3>
                             <div class="flex justify-center items-baseline my-6">
                                 <span class="text-gray-600 text-lg mr-2">Starting at</span>
-                                <span class="text-5xl font-extrabold text-gray-900">$150</span>
+                                <span class="text-5xl font-extrabold text-gray-900">$112</span>
                             </div>
 
                             <ul class="text-left space-y-4 mb-8">
@@ -257,7 +257,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7"></path>
                                     </svg>
-                                    <span class="text-gray-700">$25-30 per tire dismount/mount</span>
+                                    <span class="text-gray-700">$28–33 per tire dismount/mount</span>
                                 </li>
                                 <li class="flex items-start">
                                     <svg class="h-6 w-6 text-green-500 mr-3 flex-shrink-0" fill="none"

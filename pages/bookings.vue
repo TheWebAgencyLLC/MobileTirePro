@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import moment from 'moment-timezone'
+import { SHOP_SUPPLIES_LABEL } from '~/config/service-pricing'
 
 const ZIP_CODES = [
   { name: "Algonquin", price: 50, zip: ["60013", "60102", "60118", "60142", "60156"] },
@@ -61,9 +62,15 @@ const carData = ref<any[]>([])
 
 // Confirmation
 const showConfirmation = ref(false)
+const isSubmitting = ref(false)
 
 const $gtm = useGTM()
-const route = useRoute()
+
+const requiresQuote = computed(() => selectedServiceDetails.value?.requiresQuote === true)
+
+const activeSteps = computed(() =>
+  requiresQuote.value ? ['Service', 'Schedule', 'Details'] : STEPS
+)
 
 // Auth check
 const { data: authData } = await useLazyFetch('/api/auth/test', {
@@ -129,10 +136,24 @@ const handleServiceSelected = (details: any) => {
 
 const handleDateSelected = (bookingDetails: any) => {
   appointmentDate.value = bookingDetails.appointmentDate
+  $gtm.trackBookingStep('schedule', {
+    service: selectedServiceDetails.value?.service?.name,
+    appointmentDate: bookingDetails.appointmentDate,
+  })
   currentStep.value = 3
 }
 
+const goToPayment = () => {
+  $gtm.trackBookingStep('details', {
+    service: selectedServiceDetails.value?.service?.name,
+    totalPrice: totalPrice.value,
+  })
+  currentStep.value = 4
+}
+
 const handleSubmitBooking = async () => {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
   try {
     const vehicleInfoStr = (isLoggedIn.value && selectedCar.value && carData.value.length > 0)
       ? `${selectedCar.value.year} ${selectedCar.value.make} ${selectedCar.value.model}`
@@ -148,6 +169,12 @@ const handleSubmitBooking = async () => {
         phone: phone.value,
         rimSize: selectedServiceDetails.value.rimSize,
         tireCount: selectedServiceDetails.value.tireCount,
+        basePrice: selectedServiceDetails.value.price,
+        shopSuppliesFee: selectedServiceDetails.value.shopSuppliesFee || 0,
+        tireDisposalFee: selectedServiceDetails.value.tireDisposalFee || 0,
+        serviceFee: serviceFee.value,
+        totalPrice: requiresQuote.value ? 0 : totalPrice.value,
+        requiresQuote: requiresQuote.value || undefined,
         guestName: isLoggedIn.value ? undefined : guestName.value,
         guestEmail: isLoggedIn.value ? undefined : guestEmail.value,
         vehicleInfo: vehicleInfoStr,
@@ -155,10 +182,18 @@ const handleSubmitBooking = async () => {
     })
 
     if (response === 'OK') {
+      $gtm.trackBookingComplete({
+        service: selectedServiceDetails.value?.service?.name,
+        totalPrice: totalPrice.value,
+        rimSize: selectedServiceDetails.value?.rimSize,
+        tireCount: selectedServiceDetails.value?.tireCount,
+      })
       showConfirmation.value = true
     }
   } catch (error) {
     console.error('Error creating appointment:', error)
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -168,7 +203,7 @@ const handleSubmitBooking = async () => {
 
     <!-- Step Progress Indicator -->
     <div v-if="!showConfirmation" class="flex items-center justify-center mb-10">
-      <template v-for="(label, i) in STEPS" :key="i">
+      <template v-for="(label, i) in activeSteps" :key="label">
         <div class="flex flex-col items-center">
           <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
                :class="currentStep > i + 1
@@ -181,7 +216,7 @@ const handleSubmitBooking = async () => {
           </div>
           <span class="text-xs mt-1.5 dark:text-gray-400 hidden sm:block">{{ label }}</span>
         </div>
-        <div v-if="i < STEPS.length - 1" class="w-12 h-0.5 mb-4 mx-1 transition-colors"
+        <div v-if="i < activeSteps.length - 1" class="w-12 h-0.5 mb-4 mx-1 transition-colors"
              :class="currentStep > i + 1 ? 'bg-vivid-red' : 'bg-gray-200 dark:bg-gray-600'"></div>
       </template>
     </div>
@@ -295,13 +330,19 @@ const handleSubmitBooking = async () => {
         </div>
 
         <!-- Price Summary -->
-        <div v-if="serviceFee !== null" class="border-t dark:border-gray-700 pt-4">
+        <div v-if="requiresQuote" class="border-t dark:border-gray-700 pt-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            Oil change pricing varies by vehicle. We may reach out for additional details about your car
+            to provide an accurate quote before your appointment. No payment is collected online for this service.
+          </p>
+        </div>
+        <div v-else-if="serviceFee !== null" class="border-t dark:border-gray-700 pt-4">
           <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>{{ selectedServiceDetails?.service?.name }}</span>
             <span>${{ selectedServiceDetails?.price }}</span>
           </div>
           <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
-            <span>Shop supplies</span>
+            <span>{{ SHOP_SUPPLIES_LABEL }}</span>
             <span>${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
           </div>
           <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -318,9 +359,15 @@ const handleSubmitBooking = async () => {
           </div>
         </div>
 
-        <!-- Continue to Payment -->
+        <!-- Continue -->
         <div class="flex justify-end">
-          <button @click="currentStep = 4"
+          <button v-if="requiresQuote"
+                  @click="handleSubmitBooking"
+                  :disabled="!isStep3Valid || isSubmitting"
+                  class="px-6 py-3 bg-vivid-red text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+            {{ isSubmitting ? 'Booking...' : 'Book Appointment' }}
+          </button>
+          <button v-else @click="goToPayment"
                   :disabled="!isStep3Valid"
                   class="px-6 py-3 bg-vivid-red text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
             Continue to Payment
@@ -330,7 +377,7 @@ const handleSubmitBooking = async () => {
     </div>
 
     <!-- ───────────────────────────── STEP 4: Pay ───────────────────────────── -->
-    <div v-if="currentStep === 4 && !showConfirmation">
+    <div v-if="currentStep === 4 && !showConfirmation && !requiresQuote">
       <div class="flex items-center gap-4 mb-6">
         <button @click="currentStep = 3" class="text-vivid-red hover:text-red-700 flex items-center gap-1 text-sm">
           ← Back
@@ -361,7 +408,7 @@ const handleSubmitBooking = async () => {
           <span class="font-medium dark:text-white text-right">{{ address.street }}, {{ address.city }} IL {{ address.zipcode }}</span>
         </div>
         <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between">
-          <span>Shop supplies</span>
+          <span>{{ SHOP_SUPPLIES_LABEL }}</span>
           <span class="font-medium dark:text-white">${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
         </div>
         <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between">
@@ -384,6 +431,9 @@ const handleSubmitBooking = async () => {
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           Your appointment has been successfully scheduled.
           <span v-if="!isLoggedIn"> A confirmation has been sent to {{ guestEmail }}.</span>
+        </p>
+        <p v-if="requiresQuote" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          We'll contact you if we need any additional vehicle details to provide an accurate oil change quote before your visit.
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Please be advised that our service is weather based. We cannot work in

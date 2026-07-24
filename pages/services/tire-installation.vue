@@ -112,7 +112,7 @@
                 <div class="grid md:grid-cols-2">
                     <!-- Left side: Image -->
                     <div class="relative h-full min-h-[350px]">
-                        <img src="/images/happyCustomer.jpg" alt="Happy Mobile Tire Pro Customer"
+                        <img src="/images/happyCustomer.jpg" alt="Happy Proline Wheel & Tire Customer"
                             class="absolute inset-0 w-full h-full object-cover object-center" />
                     </div>
                     <!-- Right side: Content -->
@@ -284,8 +284,19 @@
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">Complete Tire Installation</h3>
                             <div class="flex justify-center items-baseline my-6">
                                 <span class="text-gray-600 text-lg mr-1">Starting at</span>
-                                <span class="text-5xl font-extrabold text-gray-900 mx-2">$150</span>
-                                <span class="text-gray-500">per set of 4</span>
+                                <span class="text-5xl font-extrabold text-gray-900 mx-2">${{ installStartingFour }}</span>
+                                <span class="text-gray-500">per set of 4 (18" and under)</span>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-lg p-4 mb-8 text-left text-sm text-gray-700 space-y-2">
+                                <p class="font-semibold text-gray-900">Service fee breakdown</p>
+                                <ul class="space-y-1">
+                                    <li>{{ SERVICE_PRICING.rimSizeThreshold }}" and under: ${{ SERVICE_PRICING.installPerTireUpTo18 }} per tire</li>
+                                    <li>19" and over: ${{ SERVICE_PRICING.installPerTire19Plus }} per tire</li>
+                                    <li>Tire disposal: ${{ SERVICE_PRICING.tireDisposalPerTire }} per tire</li>
+                                    <li>{{ SHOP_SUPPLIES_LABEL }}: ${{ SERVICE_PRICING.shopSuppliesPerTire }} per tire</li>
+                                </ul>
+                                <p class="text-gray-500 pt-1">Example: 4 tires on 18" wheels — ${{ installStartingFour }} install + ${{ shopSuppliesFour }} supplies + ${{ disposalFour }} disposal = ${{ exampleTotalFour }} before service fee.</p>
                             </div>
 
                             <ul class="text-left space-y-4 mb-8">
@@ -355,7 +366,7 @@
         <!-- Trust Indicators -->
         <div class="bg-gray-100 py-12">
             <div class="max-w-7xl mx-auto px-4">
-                <h2 class="text-3xl font-bold text-center mb-12">Why Choose Mobile Tire Pro</h2>
+                <h2 class="text-3xl font-bold text-center mb-12">Why Choose Proline Wheel & Tire</h2>
                 <div class="grid md:grid-cols-4 gap-8">
                     <div class="bg-white p-6 rounded-lg shadow-md text-center">
                         <div class="rounded-full bg-red-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -411,7 +422,7 @@
                 <h2 class="text-3xl font-bold mb-6">Ready for Professional Tire Installation?</h2>
                 <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
                     Skip the waiting room and let us bring our expertise to your driveway.
-                    Mobile Tire Pro - professional tire installation at your convenience.
+                    Proline Wheel & Tire - professional tire installation at your convenience.
                 </p>
                 <NuxtLink href="/bookings"
                     class="inline-block bg-vivid-red hover:bg-vivid-red/90 text-white text-lg font-medium px-8 py-4 rounded-lg transition-all transform hover:scale-105">
@@ -423,6 +434,13 @@
 </template>
 
 <script setup>
+import { SERVICE_PRICING, SHOP_SUPPLIES_LABEL } from '~/config/service-pricing'
+
+const installStartingFour = SERVICE_PRICING.installPerTireUpTo18 * 4
+const shopSuppliesFour = SERVICE_PRICING.shopSuppliesPerTire * 4
+const disposalFour = SERVICE_PRICING.tireDisposalPerTire * 4
+const exampleTotalFour = installStartingFour + shopSuppliesFour + disposalFour
+
 useHead({
     title: 'Mobile Tire Installation Service | Professional Tire Mounting',
     meta: [
