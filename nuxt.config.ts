@@ -8,7 +8,7 @@ import { externalScriptsConfig } from './config/external-scripts'
 
 export default defineNuxtConfig({
 
-    devtools: {enabled: true},
+    devtools: { enabled: process.env.NODE_ENV !== 'production' },
     app: {
         head: {
           title: metaConfig.title,
@@ -25,7 +25,7 @@ export default defineNuxtConfig({
           ],
         }
     },
-    modules: ["@nuxtjs/tailwindcss", "@nuxtjs/google-fonts", "nuxt3-leaflet", "nuxt-mongoose", './modules/auth.module', '@nuxtjs/color-mode', 'nuxt-vue3-google-signin', "@pinia/nuxt", 'pinia-plugin-persistedstate/nuxt'],
+    modules: ["@nuxtjs/tailwindcss", "@nuxtjs/google-fonts", "nuxt3-leaflet", "nuxt-mongoose", './modules/auth.module', 'nuxt-vue3-google-signin', "@pinia/nuxt", 'pinia-plugin-persistedstate/nuxt'],
     runtimeConfig: {
         accessToken: '',
 
@@ -38,42 +38,31 @@ export default defineNuxtConfig({
         }
     },
     routeRules: {
-        // Static routes (including the form page)
-            '/tires': { prerender: true },
+        '/': { prerender: true },
+        '/tires': { prerender: true },
         '/wheels': { prerender: true },
         '/fleet-services': { prerender: true },
-        // Server routes
         '/api/**': { ssr: true },
-        // Default
         '/**': { ssr: true }
     },
     tailwindcss: {
         configPath: '~/tailwind.config.js',
-        exposeConfig: true,
+        exposeConfig: false,
         injectPosition: 0,
-        viewer: true,
+        viewer: process.env.NODE_ENV !== 'production',
     },
     //@ts-ignore
     googleSignIn: {
         clientId: '44678613954-1iv2ppns1kiosof9nkgdnr3orp3nbor4.apps.googleusercontent.com',
     },
-    //@ts-ignore
-    colorMode: {
-        preference: 'light', // default value of $colorMode.preference
-        fallback: 'light', // fallback value if not system preference found
-        hid: 'nuxt-color-mode-script',
-        globalName: '__NUXT_COLOR_MODE__',
-        componentName: 'ColorScheme',
-        classPrefix: '',
-        classSuffix: '',
-        storageKey: 'nuxt-color-mode',
-    },
     googleFonts: {
         families: {
-            Lato: [400, 700, 900],
-            'Kumbh Sans': [400, 700, 900]
+            Lato: [400, 700],
+            'Kumbh Sans': [400, 700]
         },
-        display: 'swap'
+        display: 'swap',
+        preload: true,
+        prefetch: false,
     },
     mongoose: {
         uri: process.env.MONGODB_URI,

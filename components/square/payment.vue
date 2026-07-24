@@ -5,6 +5,29 @@ const emit = defineEmits(['payment'])
 
 const $gtm = useGTM()
 
+const loadSquareScript = () =>
+  new Promise<void>((resolve, reject) => {
+    if (typeof Square !== 'undefined') {
+      resolve()
+      return
+    }
+
+    const existing = document.querySelector('script[data-square-sdk]')
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('Square.js failed to load')), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://web.squarecdn.com/v1/square.js'
+    script.async = true
+    script.dataset.squareSdk = 'true'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Square.js failed to load'))
+    document.head.appendChild(script)
+  })
+
 const resetProcessing = () => {
   isProcessing.value = false;
   paymentStatus.value = "";
@@ -25,9 +48,16 @@ const isProcessing = ref(false)
 
 onMounted(async () => {
   loading.value = true;
-  await initializePaymentForm();
-  await initializeGooglePay()
-  loading.value = false;
+  try {
+    await loadSquareScript()
+    await initializePaymentForm();
+    await initializeGooglePay()
+  } catch (error) {
+    console.error(error)
+    paymentStatus.value = 'Payment form failed to load'
+  } finally {
+    loading.value = false;
+  }
 });
 
 

@@ -15,6 +15,7 @@
       <div class="flex justify-between items-center gap-4 min-h-[5.5rem] py-2.5">
         <NuxtLink to="/" class="flex items-center shrink-0">
           <img src="/images/logos/ProlineLogo-header.webp" alt="Proline Wheel & Tire Logo"
+            width="352" height="96" fetchpriority="high" decoding="async"
             class="h-16 sm:h-20 xl:h-24 w-auto max-w-[16rem] sm:max-w-[20rem] xl:max-w-[22rem] object-contain object-left">
         </NuxtLink>
         <div class="hidden xl:flex items-center gap-x-2 2xl:gap-x-3 shrink min-w-0">
@@ -76,11 +77,8 @@
               Schedule
             </button>
           </NuxtLink>
-          <LightDarkToggle />
         </div>
         <div class="xl:hidden flex items-center space-x-3 shrink-0">
-          <!-- Mobile menu button -->
-          <LightDarkToggle />
           <button @click="toggleMobileMenu" aria-label="Menu Button"
             class="text-slate-gray dark:text-gray-400 hover:text-charcoal-gray dark:hover:text-white focus:outline-none">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

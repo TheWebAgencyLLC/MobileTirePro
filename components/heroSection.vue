@@ -2,24 +2,41 @@
 import vehicleTypeSquare from "~/components/vehicleTypeSquare.vue"
 import promoBanner from "./promoBanner.vue";
 
-const colorMode = useColorMode()
 const config = useRuntimeConfig();
 
 onMounted(() => {
-  // dynamically load the external script
-  const script = document.createElement('script')
-  script.src = 'https://app.tireconnect.ca/js/widget.js'
-  script.async = true
-  script.onload = () => {
-    // init widget once script is loaded
-    if (window.TCWidget) {
-      window.TCWidget.init({
-        apikey: config.public.tireConnect,
-        container: 'tireconnect'
-      })
+  const wrapper = document.querySelector('.tireconnect-wrapper')
+  if (!wrapper) return
+
+  const loadWidget = () => {
+    if (document.querySelector('script[data-tireconnect-widget]')) return
+
+    const script = document.createElement('script')
+    script.src = 'https://app.tireconnect.ca/js/widget.js'
+    script.async = true
+    script.dataset.tireconnectWidget = 'true'
+    script.onload = () => {
+      if (window.TCWidget) {
+        window.TCWidget.init({
+          apikey: config.public.tireConnect,
+          container: 'tireconnect'
+        })
+      }
     }
+    document.body.appendChild(script)
   }
-  document.body.appendChild(script)
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry?.isIntersecting) {
+        loadWidget()
+        observer.disconnect()
+      }
+    },
+    { rootMargin: '100px' }
+  )
+
+  observer.observe(wrapper)
 })
 
 
@@ -48,18 +65,12 @@ onMounted(() => {
           <span class="dark:text-white">Vehicles We </span><span class="text-red-500">Service</span>
         </h2>
       <div class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-2 sm:gap-4 2xl:gap-6">
-        <vehicleTypeSquare vehicleType="Sedan"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/sedan.webp' : '/images/icons/sedanwhite.webp'"/>
-        <vehicleTypeSquare vehicleType="SUV"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/SUV.webp' : '/images/icons/SUVwhite.webp'"/>
-        <vehicleTypeSquare vehicleType="Truck"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/pickuptruck.webp' : '/images/icons/pickuptruckwhite.webp'"/>
-        <vehicleTypeSquare vehicleType="EV"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/electriccar.webp' : '/images/icons/electriccarwhite.webp'"/>
-        <vehicleTypeSquare vehicleType="Sports Car"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/supercar.webp' : '/images/icons/supercarwhite.webp'"/>
-        <vehicleTypeSquare vehicleType="Work Vehicle"
-                          :imageUrl="colorMode.value === 'light' ? '/images/icons/workvehicle.webp' : '/images/icons/workvehiclewhite.webp'"/>
+        <vehicleTypeSquare vehicleType="Sedan" imageUrl="/images/icons/sedan.webp"/>
+        <vehicleTypeSquare vehicleType="SUV" imageUrl="/images/icons/SUV.webp"/>
+        <vehicleTypeSquare vehicleType="Truck" imageUrl="/images/icons/pickuptruck.webp"/>
+        <vehicleTypeSquare vehicleType="EV" imageUrl="/images/icons/electriccar.webp"/>
+        <vehicleTypeSquare vehicleType="Sports Car" imageUrl="/images/icons/supercar.webp"/>
+        <vehicleTypeSquare vehicleType="Work Vehicle" imageUrl="/images/icons/workvehicle.webp"/>
       </div>
     </div>
   </section>
