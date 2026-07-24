@@ -2,7 +2,32 @@
 # 1. Add prolinewheelandtire.com and www.prolinewheelandtire.com
 # 2. Set PRIMARY domain to www.prolinewheelandtire.com (not the apex — wrong primary causes redirect loops)
 # 3. Netlify will auto-redirect prolinewheelandtire.com → www; do not duplicate that in public/_redirects
-# 4. Keep mobiletirepro.net attached to this site (legacy redirects live in public/_redirects)
+# 4. Keep mobiletirepro.net attached to this site (legacy redirects live below + public/_redirects)
+
+# Legacy domain → new domain (force=true so HTTP skips same-host HTTPS upgrade — required for GSC Change of Address)
+[[redirects]]
+  from = "http://mobiletirepro.net/*"
+  to = "https://www.prolinewheelandtire.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.mobiletirepro.net/*"
+  to = "https://www.prolinewheelandtire.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://mobiletirepro.net/*"
+  to = "https://www.prolinewheelandtire.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.mobiletirepro.net/*"
+  to = "https://www.prolinewheelandtire.com/:splat"
+  status = 301
+  force = true
 
 [[headers]]
   for = "/*"

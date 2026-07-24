@@ -1,6 +1,6 @@
 # Legacy domain → new domain (preserve paths for SEO)
-# Note: apex → www is handled by Netlify Domain settings (set primary to www.prolinewheelandtire.com).
-# Do NOT add apex→www rules here — it causes a loop if Netlify primary is still the apex domain.
+# Duplicated in netlify.toml with force=true for HTTP (GSC Change of Address).
+# Note: apex → www on prolinewheelandtire.com is handled by Netlify primary domain setting.
 https://mobiletirepro.net/*          https://www.prolinewheelandtire.com/:splat    301!
 https://www.mobiletirepro.net/*      https://www.prolinewheelandtire.com/:splat    301!
 http://mobiletirepro.net/*           https://www.prolinewheelandtire.com/:splat    301!

@@ -4,6 +4,7 @@ Complete these steps **after** the site is deployed with the new domain and 301 
 
 ## 1. Verify redirects
 
+- [ ] Visit `http://mobiletirepro.net/` — first redirect must go **directly** to `https://www.prolinewheelandtire.com/` (not `https://mobiletirepro.net/` first)
 - [ ] Visit `https://mobiletirepro.net/about` — should 301 to `https://www.prolinewheelandtire.com/about`
 - [ ] Visit `https://www.mobiletirepro.net/bookings` — should 301 to `https://www.prolinewheelandtire.com/bookings`
 - [ ] Visit `https://prolinewheelandtire.com` — should 301 to `https://www.prolinewheelandtire.com`
@@ -11,8 +12,9 @@ Complete these steps **after** the site is deployed with the new domain and 301 
 ## 2. Google Search Console
 
 - [ ] Add a property for `https://www.prolinewheelandtire.com`
+- [ ] (Recommended) Also add a **Domain** property for `prolinewheelandtire.com` via DNS — works better for Change of Address from `sc-domain:mobiletirepro.net`
 - [ ] Keep the existing `mobiletirepro.net` property active during the transition
-- [ ] In the **old** property: Settings → **Change of address** → select the new property (only after redirects are confirmed)
+- [ ] In the **old** property: Settings → **Change of address** → select the new property (only after redirects are confirmed — especially `http://mobiletirepro.net/`)
 - [ ] Submit sitemap: `https://www.prolinewheelandtire.com/sitemap.xml`
 - [ ] Monitor Coverage and Page indexing reports for 4–8 weeks
 
