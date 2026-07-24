@@ -10,6 +10,9 @@ export const socialMetaConfig = {
         content: `${SITE.name}: Expert mobile tire installation and wheel services for sedans, SUVs, trucks, and EVs. We come to you for convenient on-site service.`
       },
       { property: "og:image", content: SITE.ogImage },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: `${SITE.name} logo` },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:url", content: `${SITE.url}/` },
       { name: "twitter:title", content: `Mobile Tire Installation | ${SITE.name}` },
