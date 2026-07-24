@@ -1,6 +1,7 @@
 import {userSchema} from "~/server/models/user.schema";
 import {carSchema} from "~/server/models/car.schema";
 import {aptsSchema} from "~/server/models/apts.schema";
+import { SHOP_SUPPLIES_LABEL, getServiceDisplayName } from '~/config/service-pricing'
 //@ts-ignore
 import nodemailer from "nodemailer";
 import {format} from "date-fns";
@@ -43,7 +44,7 @@ function formatAppointmentDetails({
 }) {
     const lines = [
         guestName ? `Customer: ${guestName}` : null,
-        `Service: ${service}`,
+        `Service: ${getServiceDisplayName(service)}`,
         tireCount ? `Tires: ${tireCount}` : null,
         rimSize ? `Rim size: ${rimSize}"` : null,
         `Address: ${address}`,
@@ -55,7 +56,7 @@ function formatAppointmentDetails({
         requiresQuote
             ? '  Service price: To be quoted — we will contact you with any additional vehicle details needed for an accurate price.'
             : basePrice != null ? `  Service: ${formatCurrency(basePrice)}` : null,
-        requiresQuote ? null : shopSuppliesFee ? `  Shop supplies: ${formatCurrency(shopSuppliesFee)}` : null,
+        requiresQuote ? null : shopSuppliesFee ? `  ${SHOP_SUPPLIES_LABEL}: ${formatCurrency(shopSuppliesFee)}` : null,
         requiresQuote ? null : tireDisposalFee ? `  Tire disposal: ${formatCurrency(tireDisposalFee)}` : null,
         requiresQuote ? null : serviceFee != null ? `  Mobile service fee: ${formatCurrency(serviceFee)}` : null,
         requiresQuote

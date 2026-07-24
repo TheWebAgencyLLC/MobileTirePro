@@ -9,7 +9,7 @@
       <div @click="handleServiceClick(service)" class="p-4 cursor-pointer">
         <div class="flex justify-between items-start">
           <div>
-            <h3 class="text-lg font-semibold dark:text-white">{{ service.name }}</h3>
+            <h3 class="text-lg font-semibold dark:text-white">{{ getServiceDisplayName(service.name) }}</h3>
             <span class="text-vivid-red font-bold my-1 block">
               {{ service.name.includes('Tire Installation') ? 'Starting at $' + getDisplayPrice(service) : '$' + getDisplayPrice(service) }}
             </span>
@@ -65,11 +65,11 @@
             </span>
           </div>
           <template v-if="isInstallation(service) && rimSize && tireCount">
-            <div>Shop supplies: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
+            <div>{{ SHOP_SUPPLIES_LABEL }}: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
             <div>Tire disposal: <span class="font-semibold">${{ tireDisposalFee(tireCount).toFixed(2) }}</span></div>
           </template>
           <template v-else-if="isRepair(service) && tireCount">
-            <div>Shop supplies: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
+            <div>{{ SHOP_SUPPLIES_LABEL }}: <span class="font-semibold">${{ shopSuppliesFee(tireCount).toFixed(2) }}</span></div>
           </template>
           <div><span class="italic">+ service fee (added at checkout)</span></div>
         </div>
@@ -242,11 +242,18 @@
 import { ref } from 'vue'
 import {
   SERVICE_PRICING,
+  SHOP_SUPPLIES_LABEL,
+  getServiceDisplayName,
   getServiceDisplayPrice,
   installationBasePrice,
   shopSuppliesFee,
   tireDisposalFee,
 } from '~/config/service-pricing'
+
+const withDisplayName = (service: any) => ({
+  ...service,
+  name: getServiceDisplayName(service.name),
+})
 
 const { data: FETCHED_SERVICES } = await useFetch('/api/services/list', {
   method: 'GET',
@@ -306,7 +313,7 @@ const handleServiceClick = (service: any) => {
         ? SERVICE_PRICING.rotationFlat
         : getDisplayPrice(service)
     emit('service-selected', {
-      service,
+      service: withDisplayName(service),
       rimSize: null,
       tireCount: count,
       price,
@@ -343,7 +350,7 @@ const confirmServiceWithConfig = (service: any) => {
   }
 
   emit('service-selected', {
-    service,
+    service: withDisplayName(service),
     rimSize: isInstallation(service) ? rimSize.value : null,
     tireCount: tireCount.value,
     price: basePrice,

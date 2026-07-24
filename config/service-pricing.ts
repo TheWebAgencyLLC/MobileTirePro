@@ -8,6 +8,13 @@ export const SERVICE_PRICING = {
   repairFlat: 40,
 } as const
 
+export const SHOP_SUPPLIES_LABEL = 'Shop supplies (Wheel Weights/Valve Stems)'
+
+export function getServiceDisplayName(serviceName: string): string {
+  if (serviceName.toLowerCase().includes('rotation')) return 'Tire Rotation'
+  return serviceName
+}
+
 export function installPricePerTire(rimSize: number): number {
   return rimSize <= SERVICE_PRICING.rimSizeThreshold
     ? SERVICE_PRICING.installPerTireUpTo18

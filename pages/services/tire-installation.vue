@@ -294,7 +294,7 @@
                                     <li>{{ SERVICE_PRICING.rimSizeThreshold }}" and under: ${{ SERVICE_PRICING.installPerTireUpTo18 }} per tire</li>
                                     <li>19" and over: ${{ SERVICE_PRICING.installPerTire19Plus }} per tire</li>
                                     <li>Tire disposal: ${{ SERVICE_PRICING.tireDisposalPerTire }} per tire</li>
-                                    <li>Shop supplies (wheel weights, valve stems): ${{ SERVICE_PRICING.shopSuppliesPerTire }} per tire</li>
+                                    <li>{{ SHOP_SUPPLIES_LABEL }}: ${{ SERVICE_PRICING.shopSuppliesPerTire }} per tire</li>
                                 </ul>
                                 <p class="text-gray-500 pt-1">Example: 4 tires on 18" wheels — ${{ installStartingFour }} install + ${{ shopSuppliesFour }} supplies + ${{ disposalFour }} disposal = ${{ exampleTotalFour }} before service fee.</p>
                             </div>
@@ -434,7 +434,7 @@
 </template>
 
 <script setup>
-import { SERVICE_PRICING } from '~/config/service-pricing'
+import { SERVICE_PRICING, SHOP_SUPPLIES_LABEL } from '~/config/service-pricing'
 
 const installStartingFour = SERVICE_PRICING.installPerTireUpTo18 * 4
 const shopSuppliesFour = SERVICE_PRICING.shopSuppliesPerTire * 4

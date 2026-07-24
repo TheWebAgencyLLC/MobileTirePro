@@ -165,7 +165,7 @@
     <!-- Direct to Schedule (Rotation & Balance) -->
     <div v-if="props.selectedService === 'rotation'" class="space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="text-xl font-semibold dark:text-white">Rotation & Balance Service</h3>
+        <h3 class="text-xl font-semibold dark:text-white">Tire Rotation</h3>
         <span class="text-vivid-red font-bold">$50</span>
       </div>
       <p class="text-gray-600 dark:text-gray-400">
@@ -255,7 +255,7 @@ const serviceTitle = computed(() => {
     case 'repair':
       return 'Tire Repair'
     case 'rotation':
-      return 'Rotation & Balance'
+      return 'Tire Rotation'
     case 'changeover':
       return 'Seasonal Changeover'
     default:

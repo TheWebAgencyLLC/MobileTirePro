@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import moment from 'moment-timezone'
+import { SHOP_SUPPLIES_LABEL } from '~/config/service-pricing'
 
 const ZIP_CODES = [
   { name: "Algonquin", price: 50, zip: ["60013", "60102", "60118", "60142", "60156"] },
@@ -341,7 +342,7 @@ const handleSubmitBooking = async () => {
             <span>${{ selectedServiceDetails?.price }}</span>
           </div>
           <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
-            <span>Shop supplies</span>
+            <span>{{ SHOP_SUPPLIES_LABEL }}</span>
             <span>${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
           </div>
           <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -407,7 +408,7 @@ const handleSubmitBooking = async () => {
           <span class="font-medium dark:text-white text-right">{{ address.street }}, {{ address.city }} IL {{ address.zipcode }}</span>
         </div>
         <div v-if="selectedServiceDetails?.shopSuppliesFee" class="flex justify-between">
-          <span>Shop supplies</span>
+          <span>{{ SHOP_SUPPLIES_LABEL }}</span>
           <span class="font-medium dark:text-white">${{ selectedServiceDetails.shopSuppliesFee.toFixed(2) }}</span>
         </div>
         <div v-if="selectedServiceDetails?.tireDisposalFee" class="flex justify-between">
