@@ -1,6 +1,26 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
     <div class="container mx-auto px-4 max-w-6xl">
+      <!-- Services We Offer -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-12 border border-red-200 dark:border-red-800 shadow-sm">
+        <div class="space-y-4">
+          <div class="flex items-center space-x-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Services We Offer</h2>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
+            <li v-for="service in services" :key="service" class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {{ service }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <!-- Header Section -->
       <div class="text-center mb-12">
         <h1 class="text-4xl font-bold mb-2">
@@ -13,25 +33,6 @@
 
       <!-- Steps Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 md:col-span-3 border border-red-200 dark:border-red-800 shadow-sm hover:shadow-lg transition-all duration-300">
-          <div class="space-y-4">
-            <div class="flex items-center space-x-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-              </svg>
-            </div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Services We Offer</h2>
-            <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
-              <li v-for="service in services" :key="service" class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                {{ service }}
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 md:col-span-2 border border-red-200 dark:border-red-800 shadow-sm hover:shadow-lg transition-all duration-300">
           <div class="space-y-4">
             <div class="flex items-center space-x-4">
@@ -107,7 +108,5 @@ const services = [
   'Tire Repair',
   'TPMS Install & Calibration',
   'Oil Changes',
-  'Engine & Cabin Air Filter Changes',
-  'Wiper Blades',
 ]
 </script>

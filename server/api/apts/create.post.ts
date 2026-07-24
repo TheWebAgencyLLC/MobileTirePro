@@ -5,6 +5,61 @@ import {aptsSchema} from "~/server/models/apts.schema";
 import nodemailer from "nodemailer";
 import {format} from "date-fns";
 
+function formatCurrency(amount?: number | null) {
+    if (amount == null) return null
+    return `$${amount.toFixed(2)}`
+}
+
+function formatAppointmentDetails({
+    service,
+    tireCount,
+    rimSize,
+    address,
+    vehicleDisplay,
+    phone,
+    appointmentDate,
+    guestName,
+    basePrice,
+    shopSuppliesFee,
+    tireDisposalFee,
+    serviceFee,
+    totalPrice,
+}: {
+    service: string
+    tireCount?: number
+    rimSize?: number | string | null
+    address: string
+    vehicleDisplay: string
+    phone: string
+    appointmentDate?: string | Date
+    guestName?: string
+    basePrice?: number
+    shopSuppliesFee?: number
+    tireDisposalFee?: number
+    serviceFee?: number
+    totalPrice?: number
+}) {
+    const lines = [
+        guestName ? `Customer: ${guestName}` : null,
+        `Service: ${service}`,
+        tireCount ? `Tires: ${tireCount}` : null,
+        rimSize ? `Rim size: ${rimSize}"` : null,
+        `Address: ${address}`,
+        `Vehicle: ${vehicleDisplay}`,
+        `Phone: ${phone}`,
+        appointmentDate ? `Appointment: ${format(new Date(appointmentDate), 'PPpp')}` : null,
+        '',
+        'Pricing:',
+        basePrice != null ? `  Service: ${formatCurrency(basePrice)}` : null,
+        shopSuppliesFee ? `  Shop supplies: ${formatCurrency(shopSuppliesFee)}` : null,
+        tireDisposalFee ? `  Tire disposal: ${formatCurrency(tireDisposalFee)}` : null,
+        serviceFee != null ? `  Mobile service fee: ${formatCurrency(serviceFee)}` : null,
+        totalPrice != null ? `  Total paid: ${formatCurrency(totalPrice)}` : null,
+    ]
+
+    return lines.filter(Boolean).join('\n')
+}
+
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
 
@@ -29,7 +84,12 @@ export default defineEventHandler(async (event) => {
             rimSize,
             guestName,
             guestEmail,
-            vehicleInfo
+            vehicleInfo,
+            basePrice,
+            shopSuppliesFee,
+            tireDisposalFee,
+            serviceFee,
+            totalPrice,
         } = await readBody(event);
 
         const sessionEmail = await getAuth(event)
@@ -50,6 +110,11 @@ export default defineEventHandler(async (event) => {
             guestName: guestName || undefined,
             guestEmail: guestEmail || undefined,
             vehicleInfo: vehicleInfo || undefined,
+            basePrice,
+            shopSuppliesFee,
+            tireDisposalFee,
+            serviceFee,
+            totalPrice,
         });
 
         await apt.save()
@@ -62,12 +127,28 @@ export default defineEventHandler(async (event) => {
             ? `${car.year} ${car.make} ${car.model}`
             : (vehicleInfo || 'Not provided')
 
+        const appointmentDetails = formatAppointmentDetails({
+            service,
+            tireCount,
+            rimSize,
+            address,
+            vehicleDisplay,
+            phone,
+            appointmentDate,
+            guestName,
+            basePrice,
+            shopSuppliesFee,
+            tireDisposalFee,
+            serviceFee,
+            totalPrice,
+        })
+
         if (emailRecipient) {
             await transporter.sendMail({
                 from: '',
                 to: emailRecipient,
                 subject: "Proline Wheel & Tire - Appointment confirmed",
-                text: `Your appointment has been received, we will be in contact with you shortly \n ${service} \n ${address} \n ${vehicleDisplay} \n ${phone} \n ${format(appointmentDate, 'PPpp')}`,
+                text: `Your appointment has been received. We will be in contact with you shortly.\n\n${appointmentDetails}`,
             });
         }
 
@@ -75,7 +156,7 @@ export default defineEventHandler(async (event) => {
             from: '',
             to: "prolinewheelandtire@gmail.com",
             subject: "New Appointment",
-            text: `You got a new appointment \n ${guestName || ''} \n ${service} \n ${address} \n ${vehicleDisplay} \n ${phone}`,
+            text: `You got a new appointment\n\n${appointmentDetails}`,
         });
 
         return 'OK'

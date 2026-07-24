@@ -63,7 +63,6 @@ const carData = ref<any[]>([])
 const showConfirmation = ref(false)
 
 const $gtm = useGTM()
-const route = useRoute()
 
 // Auth check
 const { data: authData } = await useLazyFetch('/api/auth/test', {
@@ -129,7 +128,19 @@ const handleServiceSelected = (details: any) => {
 
 const handleDateSelected = (bookingDetails: any) => {
   appointmentDate.value = bookingDetails.appointmentDate
+  $gtm.trackBookingStep('schedule', {
+    service: selectedServiceDetails.value?.service?.name,
+    appointmentDate: bookingDetails.appointmentDate,
+  })
   currentStep.value = 3
+}
+
+const goToPayment = () => {
+  $gtm.trackBookingStep('details', {
+    service: selectedServiceDetails.value?.service?.name,
+    totalPrice: totalPrice.value,
+  })
+  currentStep.value = 4
 }
 
 const handleSubmitBooking = async () => {
@@ -148,6 +159,11 @@ const handleSubmitBooking = async () => {
         phone: phone.value,
         rimSize: selectedServiceDetails.value.rimSize,
         tireCount: selectedServiceDetails.value.tireCount,
+        basePrice: selectedServiceDetails.value.price,
+        shopSuppliesFee: selectedServiceDetails.value.shopSuppliesFee || 0,
+        tireDisposalFee: selectedServiceDetails.value.tireDisposalFee || 0,
+        serviceFee: serviceFee.value,
+        totalPrice: totalPrice.value,
         guestName: isLoggedIn.value ? undefined : guestName.value,
         guestEmail: isLoggedIn.value ? undefined : guestEmail.value,
         vehicleInfo: vehicleInfoStr,
@@ -155,6 +171,12 @@ const handleSubmitBooking = async () => {
     })
 
     if (response === 'OK') {
+      $gtm.trackBookingComplete({
+        service: selectedServiceDetails.value?.service?.name,
+        totalPrice: totalPrice.value,
+        rimSize: selectedServiceDetails.value?.rimSize,
+        tireCount: selectedServiceDetails.value?.tireCount,
+      })
       showConfirmation.value = true
     }
   } catch (error) {
@@ -320,7 +342,7 @@ const handleSubmitBooking = async () => {
 
         <!-- Continue to Payment -->
         <div class="flex justify-end">
-          <button @click="currentStep = 4"
+          <button @click="goToPayment"
                   :disabled="!isStep3Valid"
                   class="px-6 py-3 bg-vivid-red text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
             Continue to Payment

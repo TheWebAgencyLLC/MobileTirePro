@@ -1,5 +1,17 @@
 <script setup>
-import GoogleReviewsWidget from '@/components/googleReviewsWidget.vue'  
+import GoogleReviewsWidget from '@/components/googleReviewsWidget.vue'
+import { SITE } from '~/config/site'
+
+useHead({
+  title: `Mobile Tire & Wheel Service in Chicagoland | ${SITE.name}`,
+  meta: [
+    {
+      name: 'description',
+      content: `${SITE.name} brings expert mobile tire installation and wheel services to your driveway. Book online for sedans, SUVs, trucks, and EVs across Chicagoland.`
+    }
+  ],
+  link: [{ rel: 'canonical', href: `${SITE.url}/` }]
+})
 </script>
 
 <script>

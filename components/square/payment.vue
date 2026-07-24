@@ -1,15 +1,9 @@
 <script setup lang="ts">
-onMounted(async () => {
-  loading.value = true;
-  await initializePaymentForm();
-  await initializeGooglePay()
-  loading.value = false;
-
-});
-
-const {price} = defineProps(['price'])
+const { price } = defineProps(['price'])
 
 const emit = defineEmits(['payment'])
+
+const $gtm = useGTM()
 
 const resetProcessing = () => {
   isProcessing.value = false;
@@ -29,7 +23,12 @@ let loading = ref(false);
 
 const isProcessing = ref(false)
 
-console.log(price)
+onMounted(async () => {
+  loading.value = true;
+  await initializePaymentForm();
+  await initializeGooglePay()
+  loading.value = false;
+});
 
 
 function buildPaymentRequest(payments) {
@@ -116,6 +115,7 @@ const handlePaymentMethodSubmission = async () => {
   });
   if (!error.value) {
     paymentStatus.value = "Payment completed, creating appointment...";
+    $gtm.trackPaymentSuccess({ amount: price, method: 'card' })
     emit('payment')
     // Keep isProcessing true - parent component will handle completion
   } else {
@@ -146,6 +146,7 @@ const handleGooglePaySubmission = async (googlePay) => {
     });
     if (!error.value) {
       paymentStatus.value = "Payment completed, creating appointment...";
+      $gtm.trackPaymentSuccess({ amount: price, method: 'google_pay' })
       emit('payment')
       // Keep isProcessing true - parent component will handle completion
     } else {

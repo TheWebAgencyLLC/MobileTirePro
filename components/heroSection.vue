@@ -1,17 +1,9 @@
 <script setup lang="ts">
-const $gtm = useGTM()
 import vehicleTypeSquare from "~/components/vehicleTypeSquare.vue"
 import promoBanner from "./promoBanner.vue";
 
 const colorMode = useColorMode()
 const config = useRuntimeConfig();
-
-const trackVehicleSelection = (vehicleType: string) => {
-  $gtm.trackEvent({
-    event: 'vehicle_selection',
-    vehicleType: vehicleType
-  })
-}
 
 onMounted(() => {
   // dynamically load the external script

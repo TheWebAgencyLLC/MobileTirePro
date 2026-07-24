@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     routeRules: {
         // Static routes (including the form page)
             '/tires': { prerender: true },
+        '/wheels': { prerender: true },
         '/fleet-services': { prerender: true },
         // Server routes
         '/api/**': { ssr: true },
