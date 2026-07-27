@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { analyticsConfig } from './config/analytics'
+import { gtmConfig } from './config/gtm'
 import { schemaConfig } from './config/schema'
 import { metaConfig } from './config/meta'
 import { hotjarConfig } from './config/hotjar'
@@ -18,11 +19,13 @@ export default defineNuxtConfig({
             ...socialMetaConfig.meta
           ],
           script: [
+            ...(process.env.NODE_ENV === 'production' ? gtmConfig.script : []),
             ...analyticsConfig.googleAnalytics,
             ...schemaConfig.script,
             ...externalScriptsConfig.script,
             ...hotjarConfig.script,
           ],
+          noscript: process.env.NODE_ENV === 'production' ? gtmConfig.noscript : [],
         }
     },
     modules: ["@nuxtjs/tailwindcss", "@nuxtjs/google-fonts", "nuxt3-leaflet", "nuxt-mongoose", './modules/auth.module', 'nuxt-vue3-google-signin', "@pinia/nuxt", 'pinia-plugin-persistedstate/nuxt'],
