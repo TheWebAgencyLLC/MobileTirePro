@@ -13,7 +13,15 @@ export default defineNuxtConfig({
     app: {
         head: {
           title: metaConfig.title,
-          link: metaConfig.link,
+          link: [
+            ...metaConfig.link,
+            ...(process.env.NODE_ENV === 'production'
+              ? [
+                  { rel: 'preconnect', href: 'https://app.tireconnect.ca' },
+                  { rel: 'preconnect', href: 'https://static.elfsight.com' },
+                ]
+              : []),
+          ],
           meta: [
             ...metaConfig.meta,
             ...socialMetaConfig.meta

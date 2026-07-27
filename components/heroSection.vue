@@ -18,7 +18,7 @@ import promoBanner from "./promoBanner.vue";
         Save time and stress with our mobile tire service. Whether you’re at home or work, we don’t compromise on
         quality of service. Book your appointment with ease! Start by selecting your vehicle or tire size below
       </p>
-      <TireConnectWidget />
+      <TireConnectWidget defer-until-idle />
 
       <h2 class="text-4xl font-bold mb-2">
           <span class="dark:text-white">Vehicles We </span><span class="text-red-500">Service</span>
