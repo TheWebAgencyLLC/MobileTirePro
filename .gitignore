@@ -25,3 +25,36 @@ logs
 
 # Local Netlify folder
 .netlify
+
+# Unused assets kept locally for reference (excluded from deploy)
+# Duplicate carousel images (homepage uses public/images/carousel/*.jpg)
+public/images/classicCar.webp
+public/images/genesis.jpeg
+public/images/gtr.webp
+public/images/hyundai.webp
+public/images/jeep.webp
+public/images/rivianEV.webp
+public/images/tesla.webp
+public/images/trailer.webp
+
+# Unused icon variants and assets
+public/images/icons/SUVwhite.webp
+public/images/icons/air-filter.svg
+public/images/icons/electriccarwhite.webp
+public/images/icons/pickuptruckwhite.webp
+public/images/icons/racing.webp
+public/images/icons/sedanwhite.webp
+public/images/icons/supercarwhite.webp
+public/images/icons/wiper-blade.svg
+public/images/icons/workvehiclewhite.webp
+
+# Legacy / alternate logos (site uses ProlineLogo-header.webp)
+public/images/logos/MTP_PNG.png
+public/images/logos/ProlineLogo.webp
+public/images/logos/logo_img2.webp
+public/images/logos/mtpLogo.png
+public/images/meta_img.webp
+
+# Unused components (superseded or never integrated)
+components/carSelectorForm.vue
+components/booking/ServiceDetail.vue
