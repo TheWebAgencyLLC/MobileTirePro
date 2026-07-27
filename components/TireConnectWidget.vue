@@ -2,13 +2,32 @@
 const props = withDefaults(defineProps<{
   containerId?: string
   lazy?: boolean
+  deferUntilIdle?: boolean
 }>(), {
   containerId: 'tireconnect',
   lazy: true,
+  deferUntilIdle: false,
 })
 
 const config = useRuntimeConfig()
 const wrapper = ref<HTMLElement | null>(null)
+const container = ref<HTMLElement | null>(null)
+const isLoading = ref(true)
+
+declare global {
+  interface Window {
+    TCWidget?: {
+      init: (options: { apikey: string; container: string }) => void
+    }
+  }
+}
+
+const markReady = async () => {
+  if (container.value) {
+    await waitForDomContent(container.value, { timeout: 8000 })
+  }
+  isLoading.value = false
+}
 
 const initWidget = () => {
   if (!window.TCWidget) return
@@ -16,26 +35,34 @@ const initWidget = () => {
     apikey: config.public.tireConnect,
     container: props.containerId,
   })
+  markReady()
 }
 
 const loadWidget = () => {
-  const existingScript = document.querySelector('script[data-tireconnect-widget]')
-  if (existingScript) {
-    initWidget()
-    return
-  }
+  loadScriptOnce(
+    'https://app.tireconnect.ca/js/widget.js',
+    'tireconnect-widget',
+    initWidget
+  )
+}
 
-  const script = document.createElement('script')
-  script.src = 'https://app.tireconnect.ca/js/widget.js'
-  script.async = true
-  script.dataset.tireconnectWidget = 'true'
-  script.onload = initWidget
-  document.body.appendChild(script)
+const scheduleLoad = () => {
+  if (props.deferUntilIdle) {
+    scheduleWhenIdle(loadWidget, { timeout: 3000 })
+  } else {
+    loadWidget()
+  }
 }
 
 onMounted(() => {
+  const safetyTimer = setTimeout(() => {
+    isLoading.value = false
+  }, 10000)
+
+  onUnmounted(() => clearTimeout(safetyTimer))
+
   if (!props.lazy) {
-    loadWidget()
+    scheduleLoad()
     return
   }
 
@@ -44,7 +71,7 @@ onMounted(() => {
   const observer = new IntersectionObserver(
     ([entry]) => {
       if (entry?.isIntersecting) {
-        loadWidget()
+        scheduleLoad()
         observer.disconnect()
       }
     },
@@ -56,8 +83,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="wrapper" class="tireconnect-wrapper w-full">
-    <div :id="containerId"></div>
+  <div ref="wrapper" class="tireconnect-wrapper relative w-full min-h-[480px]">
+    <WidgetSkeleton
+      v-if="isLoading"
+      variant="search"
+      min-height="480px"
+      class="absolute inset-0 z-10"
+    />
+    <div
+      ref="container"
+      :id="containerId"
+      class="tireconnect-content w-full transition-opacity duration-300"
+      :class="isLoading ? 'opacity-0' : 'opacity-100'"
+    />
   </div>
 </template>
 
