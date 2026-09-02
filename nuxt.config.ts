@@ -41,10 +41,20 @@ export default defineNuxtConfig({
         accessToken: '',
 
         pass: '',
+        // Gmail account the app password in NUXT_PASS belongs to — the SMTP login
+        // must match it. Defaults to prolinewheelandtire@gmail.com.
+        mailUser: '',
+        // Where "New Appointment" notifications are sent.
+        mailOwner: '',
+        // Optional ntfy.sh topic for owner push notifications. Unset = disabled.
+        ntfyTopic: '',
         public: {
             squareAppId: '',
             tireConnect: '',
             locationId: '',
+            // 'sandbox' to test against Square's sandbox; anything else is production.
+            // Read by both the client (which SDK to load) and the server (which API to charge).
+            squareEnvironment: '',
             chatServerUrl: process.env.CHAT_SERVER_URL || 'http://localhost:4000'
         }
     },

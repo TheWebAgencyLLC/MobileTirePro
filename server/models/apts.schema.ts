@@ -57,11 +57,23 @@ export const aptsSchema = defineMongooseModel({
         tireDisposalFee: {
             type: 'number',
         },
+        storageFee: {
+            type: 'number',
+        },
         serviceFee: {
             type: 'number',
         },
         totalPrice: {
             type: 'number',
+        },
+        includeStorage: {
+            type: 'boolean',
+        },
+        changeoverType: {
+            type: 'string',
+        },
+        squarePaymentId: {
+            type: 'string',
         }
     }
 });

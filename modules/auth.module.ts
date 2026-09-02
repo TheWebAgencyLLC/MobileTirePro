@@ -1,41 +1,42 @@
-import {defineNuxtModule, logger} from "@nuxt/kit";
-import {sha256} from 'ohash'
-import {defu} from 'defu'
+import { defineNuxtModule, logger } from "@nuxt/kit";
+import { hash } from "ohash";
+import { defu } from "defu";
 
-
-type Routes = ['login', 'register', 'logout', 'me']
+type Routes = ["login", "register", "logout", "me"];
 
 export interface ModuleOptions {
-    secret: string,
-    exclude?: Array<Routes[number]>
+    secret: string;
+    exclude?: Array<Routes[number]>;
 }
 
 export default defineNuxtModule<ModuleOptions>({
     meta: {
-        name: 'nuxt-mongo-auth',
+        name: "nuxt-mongo-auth",
         compatibility: {
-            nuxt: '^3.0.0',
+            nuxt: "^3.0.0",
             bridge: false,
         },
-        configKey: 'mongoAuth',
+        configKey: "mongoAuth",
     },
     defaults: {
         secret: process.env.MONGO_SECRET as string,
-        exclude: []
+        exclude: [],
     },
     async setup(options, nuxt) {
-        const config = nuxt.options.runtimeConfig
-        const secret = options.secret || sha256(`${Date.now()}${Math.random()}`.slice(0, 32))
-        if(!options.secret){
+        const config = nuxt.options.runtimeConfig;
+        const secret =
+            options.secret || hash(`${Date.now()}${Math.random()}`.slice(0, 32));
+
+        if (!options.secret) {
             //TODO: find out why this can trigger.
-            console.log('You triggered the false options.secret')
+            //console.log("You triggered the false options.secret");
         }
         config.auth = defu(config.auth || {}, {
             mongo: {
                 secret,
                 exclude: options.exclude,
-            }
-        })
-        logger.info('Mongo Auth is injected')
-    }
-})
+            },
+        });
+        logger.info("Mongo Auth is injected");
+    },
+});

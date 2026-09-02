@@ -3,8 +3,6 @@ const { price } = defineProps(['price'])
 
 const emit = defineEmits(['payment'])
 
-const $gtm = useGTM()
-
 const loadSquareScript = () =>
   new Promise<void>((resolve, reject) => {
     if (typeof Square !== 'undefined') {
@@ -20,7 +18,9 @@ const loadSquareScript = () =>
     }
 
     const script = document.createElement('script')
-    script.src = 'https://web.squarecdn.com/v1/square.js'
+    script.src = useRuntimeConfig().public.squareEnvironment === 'sandbox'
+      ? 'https://sandbox.web.squarecdn.com/v1/square.js'
+      : 'https://web.squarecdn.com/v1/square.js'
     script.async = true
     script.dataset.squareSdk = 'true'
     script.onload = () => resolve()
@@ -28,9 +28,9 @@ const loadSquareScript = () =>
     document.head.appendChild(script)
   })
 
-const resetProcessing = () => {
+const resetProcessing = (message = "") => {
   isProcessing.value = false;
-  paymentStatus.value = "";
+  paymentStatus.value = message;
 }
 
 defineExpose({
@@ -45,6 +45,9 @@ let paymentStatus = ref("");
 let loading = ref(false);
 
 const isProcessing = ref(false)
+
+// The card is only tokenized here — the server charges it as part of creating the
+// appointment, so a payment can never succeed without a booking to match it.
 
 onMounted(async () => {
   loading.value = true;
@@ -66,7 +69,7 @@ function buildPaymentRequest(payments) {
     countryCode: 'US',
     currencyCode: 'USD',
     total: {
-      amount: price.toString(),
+      amount: Number(price).toFixed(2),
       label: 'Total',
     },
   });
@@ -123,32 +126,16 @@ const tokenize = async (paymentMethod) => {
 }
 
 const handlePaymentMethodSubmission = async () => {
-  console.warn('handlePaymentMethodSubmission')
   if (isProcessing.value) return;
-  console.warn('STARTING')
   isProcessing.value = true;
-  paymentStatus.value = "";
-  const token = await tokenize(card);
-  const {data, error} = await useFetch("/api/pay", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: {
-      locationId,
-      sourceId: token,
-      amountMoney: {
-        amount: (parseInt(price) * 100).toString(),
-        currency: "USD"
-      }
-    },
-  });
-  if (!error.value) {
-    paymentStatus.value = "Payment completed, creating appointment...";
-    $gtm.trackPaymentSuccess({ amount: price, method: 'card' })
-    emit('payment')
+  try {
+    paymentStatus.value = "";
+    const token = await tokenize(card);
+    paymentStatus.value = "Processing payment...";
+    emit('payment', { token, method: 'card' })
     // Keep isProcessing true - parent component will handle completion
-  } else {
+  } catch (e) {
+    console.error(e)
     paymentStatus.value = "Payment failed";
     isProcessing.value = false;
   }
@@ -160,29 +147,9 @@ const handleGooglePaySubmission = async (googlePay) => {
   try {
     paymentStatus.value = "";
     const token = await tokenize(googlePay);
-    const {error} = await useFetch("/api/pay", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: {
-        locationId,
-        sourceId: token,
-        amountMoney: {
-          amount: (parseInt(price) * 100).toString(),
-          currency: "USD"
-        }
-      },
-    });
-    if (!error.value) {
-      paymentStatus.value = "Payment completed, creating appointment...";
-      $gtm.trackPaymentSuccess({ amount: price, method: 'google_pay' })
-      emit('payment')
-      // Keep isProcessing true - parent component will handle completion
-    } else {
-      paymentStatus.value = "Payment failed";
-      isProcessing.value = false;
-    }
+    paymentStatus.value = "Processing payment...";
+    emit('payment', { token, method: 'google_pay' })
+    // Keep isProcessing true - parent component will handle completion
   } catch (e) {
     console.error(e)
     paymentStatus.value = "Payment failed";

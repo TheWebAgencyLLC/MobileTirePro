@@ -1,71 +1,31 @@
-import { defineEventHandler, readBody } from 'h3';
+import { defineEventHandler } from 'h3';
 import moment from 'moment-timezone';
+import { SHOP_TIMEZONE, generateBookableSlots, findConflictingAppointment } from '~/server/utils/slots';
 
-function generateDateObjects() {
-    const intervals = [];
-    const now = moment().tz('America/Chicago').toDate();
-
-    for (let i = 0; i < 7; i++) {
-        const currentDate = moment(now).tz('America/Chicago').add(i, 'days').toDate();
-        const dayOfWeek = currentDate.getDay();
-
-        // Skip Sunday (day 0)
-        let startHour, endHour;
-        if (dayOfWeek === 6 || dayOfWeek === 0) { // Saturday
-            startHour = 7;
-            endHour = 16;
-        } else { // Weekday (Monday to Friday)
-            startHour = 17;
-            endHour = 18;
-        }
-
-        for (let hour = startHour; hour < endHour; hour++) {
-            const dateObject = moment(currentDate).tz('America/Chicago').set({
-                hour: hour,
-                minute: 0,
-                second: 0,
-                millisecond: 0
-            }).toDate();
-            intervals.push(dateObject);
-        }
-    }
-
-    return intervals;
-}
-
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
     try {
-        // Generate date objects for the next 7 days
-        const dateObjects = generateDateObjects();
+        const slots = generateBookableSlots();
 
-        // Create a map to stores availability status for each day
-        const availabilityMap = {};
+        // Same conflict rule the booking endpoint enforces, so what we offer here
+        // is exactly what /api/apts/create will accept.
+        const taken = await Promise.all(slots.map(slot => findConflictingAppointment(slot)));
 
-        // Loop through each date object and check if there's an appointment
-        for (const dateObject of dateObjects) {
-            const dayKey = moment(dateObject).tz('America/Chicago').format('MM-DD-YYYY');
+        const availabilityMap: Record<string, Date[]> = {};
+
+        slots.forEach((slot, i) => {
+            const dayKey = moment(slot).tz(SHOP_TIMEZONE).format('MM-DD-YYYY');
 
             if (!availabilityMap[dayKey]) {
                 availabilityMap[dayKey] = [];
             }
 
-            const startOfHour = moment(dateObject).tz('America/Chicago').startOf('hour');
-            const endOfHour = startOfHour.clone().endOf('hour');
-
-            const appointment = await aptsSchema.findOne({
-                appointmentDate: {
-                    $gte: startOfHour.toDate(),
-                    $lte: endOfHour.toDate(),
-                },
-            });
-
-            if (!appointment) {
-                availabilityMap[dayKey].push(dateObject);
+            if (!taken[i]) {
+                availabilityMap[dayKey].push(slot);
             }
-        }
+        });
 
         return availabilityMap;
-    } catch (error) {
+    } catch (error: any) {
         return {
             status: 'error',
             message: error.message,

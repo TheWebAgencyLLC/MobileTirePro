@@ -2,35 +2,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import moment from 'moment-timezone'
-import { SHOP_SUPPLIES_LABEL } from '~/config/service-pricing'
-
-const ZIP_CODES = [
-  { name: "Algonquin", price: 50, zip: ["60013", "60102", "60118", "60142", "60156"] },
-  { name: "Antioch", price: 75, zip: ["60002"] },
-  { name: "Barrington", price: 75, zip: ["60010", "60011"] },
-  { name: "Carpentersville", price: 75, zip: ["60102", "60110", "60118"] },
-  { name: "Cary", price: 50, zip: ["60013"] },
-  { name: "Crystal Lake", price: 50, zip: ["60012", "60014", "60039"] },
-  { name: "Grayslake", price: 50, zip: ["60030"] },
-  { name: "Gurnee", price: 75, zip: ["60031"] },
-  { name: "Huntley", price: 50, zip: ["60142"] },
-  { name: "Hawthorne Woods", price: 75, zip: ["60047", "60060"] },
-  { name: "Island Lake", price: 50, zip: ["60042", "60051", "60084"] },
-  { name: "Johnsburg", price: 50, zip: ["60050", "60051"] },
-  { name: "Lake in the Hills", price: 50, zip: ["60102", "60156"] },
-  { name: "Lake Villa", price: 75, zip: ["60046"] },
-  { name: "Lake Zurich", price: 75, zip: ["60047", "60049"] },
-  { name: "Lakemoor", price: 50, zip: ["60041", "60050", "60051", "60073"] },
-  { name: "McHenry", price: 50, zip: ["60050", "60051"] },
-  { name: "Richmond", price: 50, zip: ["60071"] },
-  { name: "Ringwood", price: 50, zip: ["60072"] },
-  { name: "Round Lake", price: 50, zip: ["60073"] },
-  { name: "Spring grove", price: 50, zip: ["60081"] },
-  { name: "Volo", price: 50, zip: ["60020", "60041", "60051", "60073"] },
-  { name: "Wauconda", price: 50, zip: ["60084"] },
-  { name: "Wonder Lake", price: 50, zip: ["60097"] },
-  { name: "Woodstock", price: 50, zip: ["60098"] }
-]
+import { SHOP_SUPPLIES_LABEL, SERVICE_PRICING, getServiceFeeForZip } from '~/config/service-pricing'
+import { SITE } from '~/config/site'
 
 // Step management
 const currentStep = ref(1)
@@ -63,6 +36,9 @@ const carData = ref<any[]>([])
 // Confirmation
 const showConfirmation = ref(false)
 const isSubmitting = ref(false)
+const bookingError = ref<string | null>(null)
+const paymentRef = ref<any>(null)
+const idempotencyKey = ref('')
 
 const $gtm = useGTM()
 
@@ -94,21 +70,27 @@ watch(() => address.value.zipcode, (zip) => {
   zipError.value = false
   serviceFee.value = null
   if (zip.length === 5) {
-    const city = ZIP_CODES.find(c => c.zip.includes(zip))
-    if (city) {
-      serviceFee.value = city.price
+    const fee = getServiceFeeForZip(zip)
+    if (fee !== null) {
+      serviceFee.value = fee
     } else {
       zipError.value = true
     }
   }
 })
 
-// Total price
+// Total price — mirrors server/utils/pricing.ts, which is the authority.
+const storageFee = computed(() =>
+  selectedServiceDetails.value?.includeStorage ? SERVICE_PRICING.seasonalStorageFee : 0
+)
+
 const totalPrice = computed(() => {
-  return (selectedServiceDetails.value?.price || 0)
+  const total = (selectedServiceDetails.value?.price || 0)
     + (serviceFee.value || 0)
     + (selectedServiceDetails.value?.shopSuppliesFee || 0)
     + (selectedServiceDetails.value?.tireDisposalFee || 0)
+    + storageFee.value
+  return Math.round(total * 100) / 100
 })
 
 // Step 3 form validity
@@ -136,6 +118,7 @@ const handleServiceSelected = (details: any) => {
 
 const handleDateSelected = (bookingDetails: any) => {
   appointmentDate.value = bookingDetails.appointmentDate
+  bookingError.value = null
   $gtm.trackBookingStep('schedule', {
     service: selectedServiceDetails.value?.service?.name,
     appointmentDate: bookingDetails.appointmentDate,
@@ -143,7 +126,15 @@ const handleDateSelected = (bookingDetails: any) => {
   currentStep.value = 3
 }
 
+const newIdempotencyKey = () =>
+  (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
 const goToPayment = () => {
+  bookingError.value = null
+  // One key per payment attempt, so a retried network error can't double-charge.
+  idempotencyKey.value = newIdempotencyKey()
   $gtm.trackBookingStep('details', {
     service: selectedServiceDetails.value?.service?.name,
     totalPrice: totalPrice.value,
@@ -151,47 +142,76 @@ const goToPayment = () => {
   currentStep.value = 4
 }
 
-const handleSubmitBooking = async () => {
+// Receives { token, method } from SquarePayment, or a click event on the quote-only path.
+const handleSubmitBooking = async (paymentPayload?: any) => {
+  const payment = (paymentPayload && typeof paymentPayload.token === 'string') ? paymentPayload : null
+
   if (isSubmitting.value) return
   isSubmitting.value = true
+  bookingError.value = null
+
   try {
     const vehicleInfoStr = (isLoggedIn.value && selectedCar.value && carData.value.length > 0)
       ? `${selectedCar.value.year} ${selectedCar.value.make} ${selectedCar.value.model}`
       : `${vehicleYear.value} ${vehicleMake.value} ${vehicleModel.value}`
 
-    const response = await $fetch('/api/apts/create', {
+    // Prices are deliberately absent: the server recomputes them from these inputs.
+    const response: any = await $fetch('/api/apts/create', {
       method: 'POST',
       body: {
         appointmentDate: appointmentDate.value,
         carId: (isLoggedIn.value && selectedCar.value?._id) ? selectedCar.value._id : undefined,
         service: selectedServiceDetails.value.service.name,
         address: `${address.value.street} ${address.value.city} IL ${address.value.zipcode}`,
+        zip: address.value.zipcode,
         phone: phone.value,
         rimSize: selectedServiceDetails.value.rimSize,
         tireCount: selectedServiceDetails.value.tireCount,
-        basePrice: selectedServiceDetails.value.price,
-        shopSuppliesFee: selectedServiceDetails.value.shopSuppliesFee || 0,
-        tireDisposalFee: selectedServiceDetails.value.tireDisposalFee || 0,
-        serviceFee: serviceFee.value,
-        totalPrice: requiresQuote.value ? 0 : totalPrice.value,
-        requiresQuote: requiresQuote.value || undefined,
+        changeoverType: selectedServiceDetails.value.changeoverType,
+        includeStorage: selectedServiceDetails.value.includeStorage,
         guestName: isLoggedIn.value ? undefined : guestName.value,
         guestEmail: isLoggedIn.value ? undefined : guestEmail.value,
         vehicleInfo: vehicleInfoStr,
+        sourceId: payment?.token,
+        idempotencyKey: idempotencyKey.value,
       }
     })
 
-    if (response === 'OK') {
+    if (response?.ok) {
+      if (payment) {
+        $gtm.trackPaymentSuccess({
+          amount: response.quote?.totalPrice ?? totalPrice.value,
+          method: payment.method,
+        })
+      }
       $gtm.trackBookingComplete({
         service: selectedServiceDetails.value?.service?.name,
-        totalPrice: totalPrice.value,
+        totalPrice: response.quote?.totalPrice ?? totalPrice.value,
         rimSize: selectedServiceDetails.value?.rimSize,
         tireCount: selectedServiceDetails.value?.tireCount,
       })
       showConfirmation.value = true
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating appointment:', error)
+    const status = error?.statusCode ?? error?.status ?? error?.response?.status
+    const serverMessage = error?.data?.statusMessage
+
+    if (status === 409) {
+      bookingError.value = 'That time slot was just booked by someone else. Please choose another time — your card has not been charged.'
+      appointmentDate.value = null
+      currentStep.value = 2
+    } else if (status === 402) {
+      bookingError.value = serverMessage || 'Your card was declined. Please check your details or try another payment method.'
+    } else if (status === 400) {
+      bookingError.value = serverMessage || 'Some of your booking details are invalid. Please review them and try again.'
+    } else {
+      bookingError.value = `Something went wrong while completing your booking. If your card was charged you will not be charged twice — please call us at ${SITE.phone} to confirm your appointment.`
+    }
+
+    // A fresh key so the next attempt is a genuinely new charge.
+    idempotencyKey.value = newIdempotencyKey()
+    paymentRef.value?.resetProcessing?.()
   } finally {
     isSubmitting.value = false
   }
@@ -243,6 +263,11 @@ const handleSubmitBooking = async () => {
           </p>
         </div>
       </div>
+      <div v-if="bookingError"
+           class="mb-6 p-4 rounded-lg border border-vivid-red bg-red-50 dark:bg-red-900/20 text-vivid-red text-sm">
+        {{ bookingError }}
+      </div>
+
       <BookingCalendar
         :selected-service="selectedServiceDetails"
         @proceed-to-booking="handleDateSelected"
@@ -349,6 +374,10 @@ const handleSubmitBooking = async () => {
             <span>Tire disposal</span>
             <span>${{ selectedServiceDetails.tireDisposalFee.toFixed(2) }}</span>
           </div>
+          <div v-if="storageFee" class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <span>Seasonal storage</span>
+            <span>${{ storageFee.toFixed(2) }}</span>
+          </div>
           <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
             <span>Service fee</span>
             <span>${{ serviceFee }}</span>
@@ -415,13 +444,26 @@ const handleSubmitBooking = async () => {
           <span>Tire disposal</span>
           <span class="font-medium dark:text-white">${{ selectedServiceDetails.tireDisposalFee.toFixed(2) }}</span>
         </div>
+        <div v-if="storageFee" class="flex justify-between">
+          <span>Seasonal storage</span>
+          <span class="font-medium dark:text-white">${{ storageFee.toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Service fee</span>
+          <span class="font-medium dark:text-white">${{ serviceFee }}</span>
+        </div>
         <div class="border-t dark:border-gray-700 pt-2 flex justify-between font-bold text-base dark:text-white">
           <span>Total</span>
           <span class="text-vivid-red">${{ totalPrice }}</span>
         </div>
       </div>
 
-      <SquarePayment :price="totalPrice" @payment="handleSubmitBooking" />
+      <div v-if="bookingError"
+           class="mb-6 p-4 rounded-lg border border-vivid-red bg-red-50 dark:bg-red-900/20 text-vivid-red text-sm">
+        {{ bookingError }}
+      </div>
+
+      <SquarePayment ref="paymentRef" :price="totalPrice" @payment="handleSubmitBooking" />
     </div>
 
     <!-- ───────────────────────────── CONFIRMATION ───────────────────────────── -->

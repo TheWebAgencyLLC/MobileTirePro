@@ -111,7 +111,7 @@
                 <h4 class="font-semibold dark:text-white">Wheels/Tire Assemblies</h4>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Complete wheel and tire sets</p>
               </div>
-              <span class="text-vivid-red font-bold">$125</span>
+              <span class="text-vivid-red font-bold">${{ SERVICE_PRICING.seasonalChangeoverAssembly }}</span>
             </div>
           </div>
 
@@ -132,7 +132,7 @@
         <div v-if="changeoverType" class="flex items-center justify-between border-t dark:border-gray-700 pt-4">
           <div>
             <h4 class="font-semibold dark:text-white">Add Seasonal Storage</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Store your tires until next season — +$49.95</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Store your tires until next season — +${{ SERVICE_PRICING.seasonalStorageFee }}</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="includeStorage" class="sr-only peer">
@@ -375,12 +375,13 @@ const confirmChangeover = () => {
   let price: number
   let serviceName: string
 
+  // Storage is carried as its own line item (like the other fees) so the displayed
+  // breakdown matches what the server independently computes.
   if (changeoverType.value === 'assembly') {
-    price = 125 + (includeStorage.value ? 49.95 : 0)
+    price = SERVICE_PRICING.seasonalChangeoverAssembly
     serviceName = 'Seasonal Changeover (Assembly)'
   } else {
     price = installationBasePrice(rimSize.value || 0, tireCount.value || 0)
-      + (includeStorage.value ? 49.95 : 0)
     serviceName = 'Seasonal Changeover (Tires Only)'
   }
 

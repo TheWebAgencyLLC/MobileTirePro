@@ -88,7 +88,7 @@
 
                     <div v-if="props.selectedService.includeStorage" class="flex justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Seasonal Storage</span>
-                        <span class="font-medium dark:text-white">+$25</span>
+                        <span class="font-medium dark:text-white">+${{ SERVICE_PRICING.seasonalStorageFee }}</span>
                     </div>
 
                     <div v-if="selectedDate && selectedTime" class="flex justify-between">
@@ -123,6 +123,7 @@
 import { ref, computed, onMounted } from 'vue'
 import moment from 'moment-timezone'
 import { useFetch } from '#app'
+import { SERVICE_PRICING } from '~/config/service-pricing'
 
 const props = defineProps({
     selectedService: {

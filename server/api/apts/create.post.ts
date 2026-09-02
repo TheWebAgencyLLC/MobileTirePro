@@ -1,115 +1,73 @@
 import {userSchema} from "~/server/models/user.schema";
 import {carSchema} from "~/server/models/car.schema";
 import {aptsSchema} from "~/server/models/apts.schema";
-import { SHOP_SUPPLIES_LABEL, getServiceDisplayName } from '~/config/service-pricing'
-//@ts-ignore
-import nodemailer from "nodemailer";
-import {format} from "date-fns";
-
-function formatCurrency(amount?: number | null) {
-    if (amount == null) return null
-    return `$${amount.toFixed(2)}`
-}
-
-function formatAppointmentDetails({
-    service,
-    tireCount,
-    rimSize,
-    address,
-    vehicleDisplay,
-    phone,
-    appointmentDate,
-    guestName,
-    basePrice,
-    shopSuppliesFee,
-    tireDisposalFee,
-    serviceFee,
-    totalPrice,
-    requiresQuote,
-}: {
-    service: string
-    tireCount?: number
-    rimSize?: number | string | null
-    address: string
-    vehicleDisplay: string
-    phone: string
-    appointmentDate?: string | Date
-    guestName?: string
-    basePrice?: number
-    shopSuppliesFee?: number
-    tireDisposalFee?: number
-    serviceFee?: number
-    totalPrice?: number
-    requiresQuote?: boolean
-}) {
-    const lines = [
-        guestName ? `Customer: ${guestName}` : null,
-        `Service: ${getServiceDisplayName(service)}`,
-        tireCount ? `Tires: ${tireCount}` : null,
-        rimSize ? `Rim size: ${rimSize}"` : null,
-        `Address: ${address}`,
-        `Vehicle: ${vehicleDisplay}`,
-        `Phone: ${phone}`,
-        appointmentDate ? `Appointment: ${format(new Date(appointmentDate), 'PPpp')}` : null,
-        '',
-        'Pricing:',
-        requiresQuote
-            ? '  Service price: To be quoted — we will contact you with any additional vehicle details needed for an accurate price.'
-            : basePrice != null ? `  Service: ${formatCurrency(basePrice)}` : null,
-        requiresQuote ? null : shopSuppliesFee ? `  ${SHOP_SUPPLIES_LABEL}: ${formatCurrency(shopSuppliesFee)}` : null,
-        requiresQuote ? null : tireDisposalFee ? `  Tire disposal: ${formatCurrency(tireDisposalFee)}` : null,
-        requiresQuote ? null : serviceFee != null ? `  Mobile service fee: ${formatCurrency(serviceFee)}` : null,
-        requiresQuote
-            ? '  Total: Quote pending (no online payment collected)'
-            : totalPrice != null ? `  Total paid: ${formatCurrency(totalPrice)}` : null,
-    ]
-
-    return lines.filter(Boolean).join('\n')
-}
+import {computePriceQuote} from "~/server/utils/pricing";
+import {isBookableSlot, findConflictingAppointment} from "~/server/utils/slots";
+import {chargeCard} from "~/server/utils/square";
+import {formatAppointmentDetails, sendBookingNotifications} from "~/server/utils/notifications";
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
 
     try {
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            auth: {
-                user: "noreplyprolinewheelandtire@gmail.com",
-                pass: config.pass,
-            },
-        });
-
         const {
             carId,
             service,
             appointmentDate,
             address,
+            zip,
             phone,
             tireCount,
             rimSize,
             guestName,
             guestEmail,
             vehicleInfo,
-            basePrice,
-            shopSuppliesFee,
-            tireDisposalFee,
-            serviceFee,
-            totalPrice,
-            requiresQuote,
+            changeoverType,
+            includeStorage,
+            sourceId,
+            idempotencyKey,
         } = await readBody(event);
+
+        if (!service || !appointmentDate || !address || !phone) {
+            throw createError({statusCode: 400, statusMessage: 'Missing required booking details'})
+        }
+
+        // Prices are recomputed from raw inputs — anything the browser sent is ignored.
+        const quote = await computePriceQuote({
+            serviceName: service,
+            rimSize,
+            tireCount,
+            zip,
+            changeoverType,
+            includeStorage,
+        })
+
+        if (!quote.requiresQuote && !sourceId) {
+            throw createError({statusCode: 400, statusMessage: 'Payment information is required for this service'})
+        }
+
+        const when = new Date(appointmentDate)
+        if (!isBookableSlot(when)) {
+            throw createError({statusCode: 400, statusMessage: 'That appointment time is no longer available'})
+        }
+        if (await findConflictingAppointment(when)) {
+            throw createError({
+                statusCode: 409,
+                statusMessage: 'That time slot was just booked',
+                data: {code: 'SLOT_TAKEN'},
+            })
+        }
 
         const sessionEmail = await getAuth(event)
         const user = sessionEmail ? await userSchema.findOne({email: sessionEmail}).select('-password') : null
         const car = carId ? await carSchema.findById(carId) : null
 
-        const emailRecipient = sessionEmail || guestEmail
-
+        // Reserve the slot before charging so a customer who loses the race is
+        // turned away with their card untouched.
         const apt = new aptsSchema({
             carId: carId || undefined,
             service,
-            appointmentDate,
+            appointmentDate: when,
             address,
             phone,
             userId: user?._id,
@@ -118,14 +76,37 @@ export default defineEventHandler(async (event) => {
             guestName: guestName || undefined,
             guestEmail: guestEmail || undefined,
             vehicleInfo: vehicleInfo || undefined,
-            basePrice,
-            shopSuppliesFee,
-            tireDisposalFee,
-            serviceFee,
-            totalPrice,
+            changeoverType: changeoverType || undefined,
+            includeStorage: includeStorage || undefined,
+            basePrice: quote.basePrice,
+            shopSuppliesFee: quote.shopSuppliesFee,
+            tireDisposalFee: quote.tireDisposalFee,
+            storageFee: quote.storageFee,
+            serviceFee: quote.serviceFee,
+            totalPrice: quote.totalPrice,
         });
 
         await apt.save()
+
+        let paymentId: string | undefined
+        if (!quote.requiresQuote) {
+            try {
+                const charge = await chargeCard({
+                    sourceId,
+                    amountCents: quote.totalCents,
+                    locationId: config.public.locationId as string,
+                    idempotencyKey,
+                    event,
+                })
+                paymentId = charge.paymentId
+            } catch (paymentError) {
+                await aptsSchema.findByIdAndDelete(apt._id)
+                throw paymentError
+            }
+
+            apt.squarePaymentId = paymentId
+            await apt.save()
+        }
 
         if (user?._id) {
             await userSchema.findByIdAndUpdate(user._id, {$push: {apts: apt._id}})
@@ -135,46 +116,40 @@ export default defineEventHandler(async (event) => {
             ? `${car.year} ${car.make} ${car.model}`
             : (vehicleInfo || 'Not provided')
 
-        const appointmentDetails = formatAppointmentDetails({
+        const details = formatAppointmentDetails({
             service,
             tireCount,
             rimSize,
             address,
             vehicleDisplay,
             phone,
-            appointmentDate,
+            appointmentDate: when,
             guestName,
-            basePrice,
-            shopSuppliesFee,
-            tireDisposalFee,
-            serviceFee,
-            totalPrice,
-            requiresQuote,
+            includeStorage,
+            quote,
         })
 
-        if (emailRecipient) {
-            await transporter.sendMail({
-                from: '',
-                to: emailRecipient,
-                subject: "Proline Wheel & Tire - Appointment confirmed",
-                text: `Your appointment has been received. We will be in contact with you shortly.\n\n${appointmentDetails}`,
-            });
+        // Never allowed to fail the request: the appointment exists and is paid for.
+        await sendBookingNotifications({
+            customerEmail: sessionEmail || guestEmail || null,
+            details,
+            event,
+        })
+
+        return {
+            ok: true,
+            appointmentId: String(apt._id),
+            paymentId,
+            quote,
         }
 
-        await transporter.sendMail({
-            from: '',
-            to: "prolinewheelandtire@gmail.com",
-            subject: "New Appointment",
-            text: `You got a new appointment\n\n${appointmentDetails}`,
-        });
-
-        return 'OK'
-
     } catch (e: any) {
-        console.error(e.message)
+        if (e?.statusCode) throw e
+
+        console.error('[apts/create] unexpected failure:', e?.message)
         throw createError({
-            statusMessage: e.message,
-            statusCode: 400
+            statusCode: 500,
+            statusMessage: 'We could not complete your booking. Please try again.'
         })
     }
 })
