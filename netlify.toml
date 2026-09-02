@@ -1,3 +1,8 @@
+# Build environment. nuxt 3.17 requires Node 20.9+/22+; Netlify's default (18)
+# fails at `yarn install` with "The engine node is incompatible with this module".
+[build.environment]
+  NODE_VERSION = "22"
+
 # Domain setup (Netlify UI → Domain management):
 # 1. Add prolinewheelandtire.com and www.prolinewheelandtire.com
 # 2. Set PRIMARY domain to www.prolinewheelandtire.com (not the apex — wrong primary causes redirect loops)
